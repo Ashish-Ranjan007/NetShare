@@ -1,14 +1,9 @@
-import jwt from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
 
 import { User } from '../models/User';
 import { verifyJWT } from '../utils/verifyJWT';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { catchAsyncErrors } from './catchAsyncErrors';
-
-interface JwtPayload {
-	_id: string;
-}
 
 /* 
 	A middleware that checks if the user is authenticated.

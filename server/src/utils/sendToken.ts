@@ -13,8 +13,7 @@ import { ResponseData } from './ResponseData';
 export const sendToken = async (
 	user: any,
 	statusCode: number,
-	res: Response,
-	next: NextFunction
+	res: Response
 ) => {
 	const accessToken = user.getSignedToken();
 	const refreshToken = user.getRefreshToken();

@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import mongoose, { Model, Schema, model } from 'mongoose';
+import { Model, Schema, model } from 'mongoose';
 
 // Document Interface
-interface User {
+export interface IUser {
 	firstname: string;
 	lastname: string;
 	username: string;
@@ -12,16 +12,16 @@ interface User {
 	refreshToken: string;
 }
 
-interface UserMethods {
+export interface IUserMethods {
 	getSignedToken(): string;
 	getRefreshToken(): string;
-	matchPasswords(password: string): Promise<string>;
+	matchPasswords(password: string): Promise<boolean>;
 }
 
-type UserModel = Model<User, {}, UserMethods>;
+export type UserModel = Model<IUser, {}, IUserMethods>;
 
 // Schema
-const UserSchema = new Schema<User, UserModel, UserMethods>({
+export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	firstname: {
 		type: String,
 		required: [true, 'Please provide a firstname'],
@@ -100,4 +100,4 @@ UserSchema.method('matchPasswords', async function (password: string) {
 });
 
 // Model
-export const User = model<User, UserModel>('User', UserSchema);
+export const User = model<IUser, UserModel>('User', UserSchema);

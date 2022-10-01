@@ -1,11 +1,11 @@
-import { CookieOptions, NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { User } from '../models/User';
 import { verifyJWT } from '../utils/verifyJWT';
 import { sendToken } from '../utils/sendToken';
 import { ErrorHandler } from '../utils/ErrorHandler';
-import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 import { ResponseData } from '../utils/ResponseData';
+import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 
 // Register a new user
 export const register = catchAsyncErrors(
@@ -33,7 +33,7 @@ export const register = catchAsyncErrors(
 			refreshToken: '',
 		});
 
-		sendToken(user, 201, res, next);
+		sendToken(user, 201, res);
 	}
 );
 
@@ -48,17 +48,17 @@ export const login = catchAsyncErrors(
 			return next(new ErrorHandler('Invalid Credentials', 401));
 		}
 
-		const isMatched: string = await user.matchPasswords(password);
+		const isMatched: boolean = await user.matchPasswords(password);
 
 		if (!isMatched) {
 			return next(new ErrorHandler('Invalid Credentials', 401));
 		}
 
-		sendToken(user, 200, res, next);
+		sendToken(user, 200, res);
 	}
 );
 
-// Logout an user
+// Logout an authenticated user
 export const logout = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		await User.findByIdAndUpdate(req.user._id, { refreshToken: '' });
@@ -121,11 +121,12 @@ export const getUserDetails = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	res.status(200).json({
-		success: true,
-		user: {
-			email: req.user.email,
-			username: req.user.username,
-		},
-	});
+	res.status(200).json(
+		new ResponseData(true, {
+			userObj: {
+				email: req.user.email,
+				username: req.user.username,
+			},
+		})
+	);
 };
