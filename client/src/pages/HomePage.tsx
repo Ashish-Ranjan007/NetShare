@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useGetFeedsQuery } from '../../features/feeds/feedsApiSlice';
+import { useGetFeedsQuery } from '../features/feeds/feedsApiSlice';
 
 const HomePage: React.FC = () => {
 	const { data, isLoading, isSuccess, isError, error } = useGetFeedsQuery('');

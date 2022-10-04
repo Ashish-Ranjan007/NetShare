@@ -1,7 +1,9 @@
 import { Box } from '@mui/material';
-import Login from '../../components/Auth/Login';
+import React from 'react';
 
-const LoginPage: React.FC = () => {
+import Signup from '../components/Auth/Signup';
+
+const SignupPage: React.FC = () => {
 	return (
 		<Box
 			className="bg"
@@ -10,9 +12,9 @@ const LoginPage: React.FC = () => {
 				height: '100vh',
 			}}
 		>
-			<Login />
+			<Signup />
 		</Box>
 	);
 };
 
-export default LoginPage;
+export default SignupPage;

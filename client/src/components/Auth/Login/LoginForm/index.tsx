@@ -70,7 +70,7 @@ const LoginForm = () => {
 			>
 				{(formik) => {
 					return (
-						<Form>
+						<Form role="form">
 							<Stack spacing={3}>
 								<FormControl
 									control="input"

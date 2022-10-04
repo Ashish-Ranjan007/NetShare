@@ -88,7 +88,7 @@ const SignupForm = () => {
 			>
 				{(formik) => {
 					return (
-						<Form>
+						<Form role="form">
 							<Stack spacing={4}>
 								<Stack
 									spacing={4}

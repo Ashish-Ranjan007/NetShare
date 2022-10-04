@@ -81,6 +81,24 @@ const Signup = () => {
 							src={logo}
 							alt="logo image"
 						/>
+						<Typography
+							variant="caption"
+							sx={{
+								position: 'absolute',
+								bottom: 0,
+								left: 0,
+								color: 'white',
+							}}
+						>
+							Photo by{' '}
+							<a href="https://unsplash.com/@ditakesphotos?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+								Diana Parkhouse
+							</a>{' '}
+							on{' '}
+							<a href="https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+								Unsplash
+							</a>
+						</Typography>
 					</Box>
 				</Grid>
 
@@ -123,7 +141,7 @@ const Signup = () => {
 								</Typography>
 								<SignupForm />
 								<Typography
-									component="body"
+									variant="body1"
 									sx={{
 										letterSpacing: { sm: '0.045rem' },
 									}}

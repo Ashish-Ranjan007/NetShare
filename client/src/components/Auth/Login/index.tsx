@@ -50,6 +50,8 @@ const Login = () => {
 					>
 						<Box
 							sx={{
+								display: 'flex',
+								alignItems: 'flex-end',
 								height: '100%',
 								backgroundImage:
 									"url('https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80')",
@@ -57,7 +59,21 @@ const Login = () => {
 								backgroundPosition: 'left top',
 								backgroundSize: 'cover',
 							}}
-						></Box>
+						>
+							<Typography
+								variant="caption"
+								sx={{ fontWeight: 'medium' }}
+							>
+								Photo by
+								<a href="https://unsplash.com/@rhondak?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+									RhondaK Native Florida Folk Artist
+								</a>
+								on
+								<a href="https://unsplash.com/s/photos/social?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+									Unsplash
+								</a>
+							</Typography>
+						</Box>
 					</Grid>
 					<Grid item xs={12} sm={6}>
 						<Box sx={{ mx: 5, my: 2 }}>
@@ -102,7 +118,7 @@ const Login = () => {
 								</Typography>
 								<LoginForm />
 								<Typography
-									component="body"
+									variant="body1"
 									sx={{
 										textAlign: 'center',
 										letterSpacing: { sm: '0.045rem' },
