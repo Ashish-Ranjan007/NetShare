@@ -30,7 +30,6 @@ export const register = catchAsyncErrors(
 			username,
 			email,
 			password,
-			refreshToken: '',
 		});
 
 		sendToken(user, 201, res);
@@ -106,6 +105,8 @@ export const refreshToken = catchAsyncErrors(
 					userObj: {
 						email: user.email,
 						username: user.username,
+						profilePic: user.profilePic,
+						recentSearches: user.recentSearches,
 					},
 				},
 				'',
@@ -116,17 +117,92 @@ export const refreshToken = catchAsyncErrors(
 );
 
 // Get user details
-export const getUserDetails = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
-	res.status(200).json(
-		new ResponseData(true, {
-			userObj: {
-				email: req.user.email,
-				username: req.user.username,
-			},
+export const getUserDetails = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		res.status(200).json(
+			new ResponseData(true, {
+				userObj: {
+					email: req.user.email,
+					username: req.user.username,
+				},
+			})
+		);
+	}
+);
+
+// Search Users
+export const getSearchUsers = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { searchTerm } = req.query;
+		const limitToSeven = req.query.limitToSeven ? 7 : 20;
+
+		if (!searchTerm || searchTerm.length === 0) {
+			return next(new ErrorHandler('Search term not provided', 400));
+		}
+
+		// Get all users that have the provided searchTerm in their username, firstname or lastname except the current user
+		const users = await User.find({
+			$and: [
+				{ _id: { $ne: req.user._id } },
+				{
+					$or: [
+						{ username: { $regex: searchTerm, $options: 'i' } },
+						{ firstname: { $regex: searchTerm, $options: 'i' } },
+						{ lastname: { $regex: searchTerm, $options: 'i' } },
+					],
+				},
+			],
 		})
-	);
-};
+			.select('_id profilePic username')
+			.limit(limitToSeven);
+
+		res.status(200).json(
+			new ResponseData(true, {
+				results: users,
+			})
+		);
+	}
+);
+
+// Add recently searched user
+export const postAddRecentSearch = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { userId } = req.body;
+
+		if (!userId || userId.length === 0) {
+			return next(new ErrorHandler('No user id is provided', 400));
+		}
+
+		const recentlySearchedUser = await User.findById(userId);
+		const currentUser = await User.findById(req.user._id);
+
+		if (recentlySearchedUser && currentUser) {
+			// Check if recentlySearchedUser is already in the recentSearches array of currentUser
+			for (let i = 0; i < currentUser.recentSearches.length; i++) {
+				if (
+					currentUser.recentSearches[i].id ===
+					recentlySearchedUser._id.toString()
+				) {
+					return res.status(200).json(new ResponseData(true, {}));
+				}
+			}
+
+			// Remove an element from the recentSearches array if length is greater than 5
+			if (currentUser.recentSearches.length > 5) {
+				currentUser.recentSearches.pop();
+			}
+
+			// Insert the new recentSearch at the start of the array
+			currentUser.recentSearches?.unshift({
+				id: recentlySearchedUser._id.toString(),
+				profilePic: recentlySearchedUser.profilePic,
+				username: recentlySearchedUser.username,
+			});
+
+			currentUser.save();
+			res.status(201).json(new ResponseData(true, {}));
+		}
+
+		res.status(200).json(new ResponseData(true, {}));
+	}
+);

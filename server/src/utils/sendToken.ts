@@ -38,6 +38,8 @@ export const sendToken = async (
 					userObj: {
 						email: user.email,
 						username: user.username,
+						profilePic: user.profilePic,
+						recentSearches: user.recentSearches,
 					},
 				},
 				'',

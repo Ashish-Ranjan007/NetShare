@@ -10,6 +10,12 @@ export interface IUser {
 	email: string;
 	password: string;
 	refreshToken: string;
+	profilePic: string;
+	recentSearches: {
+		id: string;
+		profilePic: string;
+		username: string;
+	}[];
 }
 
 export interface IUserMethods {
@@ -52,6 +58,15 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	refreshToken: {
 		type: String,
 		select: false,
+		default: '',
+	},
+	profilePic: {
+		type: String,
+		default: '',
+	},
+	recentSearches: {
+		type: [{ id: String, profilePic: String, username: String }],
+		default: [],
 	},
 });
 

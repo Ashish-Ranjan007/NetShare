@@ -18,6 +18,7 @@ beforeEach(() => {
 	});
 
 	User.findById = jest.fn().mockResolvedValueOnce({
+		_id: 'userId',
 		email: 'email',
 		username: 'username',
 	});
@@ -319,5 +320,112 @@ describe('Integration tests for the whoami route', () => {
 			},
 			error: '',
 		});
+	});
+});
+
+describe('Integration tests for search route', () => {
+	it('GET /api/auth/search/?searchTerm=username - success - send matched users', async () => {
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				limit: jest.fn().mockResolvedValueOnce([
+					{
+						_id: '_id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				]),
+			})),
+		}));
+
+		const response = await request(app)
+			.get('/api/auth/search/?searchTerm=username')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						_id: '_id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+
+	it('GET /api/auth/search/?searchTerm=username - failure if no searchTerm is provided', async () => {
+		const response = await request(app)
+			.get('/api/auth/search/?searchTerm=')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.error).toBe('Search term not provided');
+	});
+});
+
+describe('Integration tests for add-recent-search route', () => {
+	const requestBody = {
+		userId: 'userid',
+	};
+
+	it('POST /api/auth/add-recent-search - success - add recentlySearchesUser to recentSearches on currentUser', async () => {
+		User.findById = jest.fn().mockResolvedValue({
+			_id: 'userid',
+			profilePic: 'profilePic',
+			username: 'username',
+			recentSearches: [{ id: 'userId' }],
+			save: jest.fn(),
+		});
+
+		const response = await request(app)
+			.post('/api/auth/add-recent-search')
+			.set('Authorization', 'Bearer token')
+			.send(requestBody);
+
+		expect(response.statusCode).toBe(201);
+	});
+
+	it('POST /api/auth/add-recent-search - failure if no userId is provided', async () => {
+		const response = await request(app)
+			.post('/api/auth/add-recent-search')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.error).toBe('No user id is provided');
+	});
+
+	it('POST /api/auth/add-recent-search - failure if recentlySearchedUser doesnt exists in user collection', async () => {
+		User.findById = jest
+			.fn()
+			.mockResolvedValue(false)
+			.mockResolvedValueOnce(true);
+
+		const response = await request(app)
+			.post('/api/auth/add-recent-search')
+			.set('Authorization', 'Bearer token')
+			.send(requestBody);
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	it('POST /api/auth/add-recent-search - failure if recentlySearchedUser already exists in recentSearches', async () => {
+		User.findById = jest.fn().mockResolvedValue({
+			_id: 'userid',
+			profilePic: 'profilePic',
+			username: 'username',
+			recentSearches: [{ id: 'userid' }],
+			save: jest.fn(),
+		});
+
+		const response = await request(app)
+			.post('/api/auth/add-recent-search')
+			.set('Authorization', 'Bearer token')
+			.send(requestBody);
+
+		expect(response.statusCode).toBe(200);
 	});
 });

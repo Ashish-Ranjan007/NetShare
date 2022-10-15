@@ -6,6 +6,8 @@ import {
 	register,
 	refreshToken,
 	getUserDetails,
+	getSearchUsers,
+	postAddRecentSearch,
 } from '../controllers/auth';
 import { loginSchema } from '../validationSchema/loginValidator';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
@@ -25,5 +27,7 @@ authRoute.post('/login', loginSchema, validateRequestSchema, login);
 authRoute.post('/logout', [isAuthenticated], logout);
 authRoute.get('/refresh-token', refreshToken);
 authRoute.get('/whoami', [isAuthenticated], getUserDetails);
+authRoute.get('/search', [isAuthenticated], getSearchUsers);
+authRoute.post('/add-recent-search', [isAuthenticated], postAddRecentSearch);
 
 export { authRoute };
