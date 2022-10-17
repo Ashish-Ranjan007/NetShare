@@ -6,7 +6,7 @@ import { useGetRefreshTokenQuery } from '../features/auth/authApiSlice';
 
 export function useRefreshToken() {
 	const dispatch = useAppDispatch();
-	const { data, isSuccess } = useGetRefreshTokenQuery('');
+	const { data, isSuccess } = useGetRefreshTokenQuery();
 
 	useEffect(() => {
 		if (isSuccess) {
@@ -14,7 +14,9 @@ export function useRefreshToken() {
 				setCredentials({
 					email: data.data.userObj.email,
 					username: data.data.userObj.username,
-					accessToken: data.data.token,
+					profilePic: data.data.userObj.profilePic,
+					recentSearches: data.data.userObj.recentSearches,
+					accessToken: data.token,
 					isAuthenticated: true,
 				})
 			);

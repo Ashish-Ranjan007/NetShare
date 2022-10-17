@@ -1,9 +1,20 @@
 import 'whatwg-fetch';
 import { describe, vi } from 'vitest';
-import LoginPage from '../pages/LoginPage';
-import SignupPage from '../pages/SignupPage';
-import { render, screen, userEvent, waitFor } from '../utils/test-utils';
+import {
+	cleanup,
+	render,
+	screen,
+	userEvent,
+	waitFor,
+} from '../utils/test-utils';
 import App from '../App';
+import { act } from 'react-dom/test-utils';
+
+afterEach(() => {
+	vi.resetAllMocks();
+	vi.restoreAllMocks();
+	cleanup;
+});
 
 describe('Login', () => {
 	it('should render a form', async () => {
@@ -11,7 +22,7 @@ describe('Login', () => {
 
 		const form = await screen.findByRole('form');
 
-		expect(form).toBeInTheDocument();
+		await waitFor(() => expect(form).toBeInTheDocument());
 	});
 
 	it('should display error message when invalid field format is provided', async () => {
@@ -57,7 +68,9 @@ describe('Login', () => {
 	});
 
 	it('should redirect to home route when authentication passes', async () => {
-		render(<App />);
+		await act(async () => {
+			render(<App />);
+		});
 
 		const email = await screen.findByRole('textbox', { name: /email/i });
 		const password = await screen.findByLabelText(/password/i);
@@ -68,11 +81,12 @@ describe('Login', () => {
 		const submitBtn = await screen.findByRole('button', {
 			name: /submit/i,
 		});
+
 		await userEvent.click(submitBtn);
 
-		const helloWorldText = await screen.findByText('Mocked Hello World');
+		const feedText = await screen.findByText(/feedpage/i);
 
-		await waitFor(() => expect(helloWorldText).toBeInTheDocument());
+		await waitFor(() => expect(feedText).toBeInTheDocument());
 	});
 });
 
@@ -177,8 +191,10 @@ describe('Signup', () => {
 		});
 		await userEvent.click(submitBtn);
 
-		const helloWorldText = await screen.findByText('Mocked Hello World');
+		const LogoutText = await screen.findByRole('button', {
+			name: /logout/i,
+		});
 
-		await waitFor(() => expect(helloWorldText).toBeInTheDocument());
+		await waitFor(() => expect(LogoutText).toBeInTheDocument());
 	});
 });

@@ -2,6 +2,12 @@ type DataType = {
 	userObj: {
 		email: string;
 		username: string;
+		profilePic: string;
+		recentSearches: {
+			id: string;
+			profilePic: string;
+			username: string;
+		}[];
 	};
 };
 

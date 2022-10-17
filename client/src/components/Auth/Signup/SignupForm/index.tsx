@@ -8,6 +8,7 @@ import FormControl from '../../../FormControl';
 import { useAppDispatch } from '../../../../app/hooks';
 import { setCredentials } from '../../../../features/auth/authSlice';
 import { useRegisterMutation } from '../../../../features/auth/authApiSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface Values {
 	firstname: string;
@@ -27,6 +28,7 @@ const theme = createTheme({
 });
 
 const SignupForm = () => {
+	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
 	const [signupError, setSignupError] = useState('');
 	const [register, { isLoading }] = useRegisterMutation();
@@ -55,10 +57,14 @@ const SignupForm = () => {
 				setCredentials({
 					email: returned.data.userObj.email,
 					username: returned.data.userObj.username,
+					profilePic: returned.data.userObj.profilePic,
+					recentSearches: returned.data.userObj.recentSearches,
 					accessToken: returned.token,
 					isAuthenticated: true,
 				})
 			);
+
+			navigate('/feed');
 		} catch (error: any) {
 			console.log(error);
 			setSignupError(error.data.error);

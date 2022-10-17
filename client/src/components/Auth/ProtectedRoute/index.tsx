@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../../app/hooks';
+import { LOGIN } from '../../../constants/routes';
 
 interface Props {
 	children: JSX.Element;
@@ -12,7 +13,7 @@ const ProtectedRoute = ({ children }: Props): JSX.Element => {
 		return children;
 	}
 
-	return <Navigate to="/login" />;
+	return <Navigate to={LOGIN} />;
 };
 
 export default ProtectedRoute;

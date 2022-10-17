@@ -28,3 +28,13 @@ body {
 		linear-gradient(90deg, #444cf7 0.8px, #e5e5f7 0.8px) -0.4px 0;
 	background-size: 20px 20px, 20px 20px, 10px 10px, 10px 10px;
 }
+
+a.active {
+	background: rgb(70, 122, 219);
+	background: linear-gradient(
+		90deg,
+		rgba(70, 122, 219, 0.01) 0%,
+		rgba(214, 241, 255, 1) 0%
+	);
+	box-shadow: -3px 0px 0px 0px #00a0fa inset;
+}

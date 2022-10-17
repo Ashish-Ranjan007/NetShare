@@ -39,7 +39,15 @@ export const handlers = [
 				data: {
 					userObj: {
 						email: email,
-						username: 'username',
+						username: username,
+						profilePic: '',
+						recentSearches: [
+							{
+								id: 'id',
+								username: 'username',
+								profilePic: 'profilePic',
+							},
+						],
 					},
 				},
 				error: '',
@@ -73,6 +81,8 @@ export const handlers = [
 						userObj: {
 							email: email,
 							username: username,
+							profilePic: '',
+							recentSearches: [],
 						},
 					},
 					error: '',
@@ -90,4 +100,33 @@ export const handlers = [
 			})
 		);
 	}),
+	rest.get('http://localhost:8000/api/auth/search/', (req, res, ctx) => {
+		return res(
+			ctx.status(200),
+			ctx.json({
+				success: true,
+				data: {
+					results: [
+						{
+							profilePic: 'profilePic',
+							id: 'id',
+							username: 'username123',
+						},
+					],
+				},
+			})
+		);
+	}),
+	rest.post(
+		'http://localhost:8000/api/auth/add-recent-search',
+		(req, res, ctx) => {
+			return res(
+				ctx.status(200),
+				ctx.json({
+					success: true,
+					data: {},
+				})
+			);
+		}
+	),
 ];

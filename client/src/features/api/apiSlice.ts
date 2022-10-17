@@ -62,6 +62,10 @@ const baseQueryWithReauth: BaseQueryFn<
 						setCredentials({
 							email: refreshResult.data.data.userObj.email,
 							username: refreshResult.data.data.userObj.username,
+							profilePic:
+								refreshResult.data.data.userObj.profilePic,
+							recentSearches:
+								refreshResult.data.data.userObj.profilePic,
 							accessToken: refreshResult.data.token,
 							isAuthenticated: true,
 						})

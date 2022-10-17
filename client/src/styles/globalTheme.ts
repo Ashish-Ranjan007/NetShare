@@ -16,4 +16,9 @@ export const globalTheme = createTheme({
 			'"Segoe UI Symbol"',
 		].join(','),
 	},
+	palette: {
+		text: {
+			primary: '#4E5D78',
+		},
+	},
 });
