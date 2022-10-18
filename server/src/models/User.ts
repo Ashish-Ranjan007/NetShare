@@ -2,6 +2,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Model, Schema, model } from 'mongoose';
 
+type ProfileReference = {
+	id: string;
+	profilePic: string;
+	username: string;
+};
+
 // Document Interface
 export interface IUser {
 	firstname: string;
@@ -11,11 +17,9 @@ export interface IUser {
 	password: string;
 	refreshToken: string;
 	profilePic: string;
-	recentSearches: {
-		id: string;
-		profilePic: string;
-		username: string;
-	}[];
+	recentSearches: ProfileReference[];
+	followers: ProfileReference[];
+	followings: ProfileReference[];
 }
 
 export interface IUserMethods {
@@ -65,6 +69,14 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 		default: '',
 	},
 	recentSearches: {
+		type: [{ id: String, profilePic: String, username: String }],
+		default: [],
+	},
+	followers: {
+		type: [{ id: String, profilePic: String, username: String }],
+		default: [],
+	},
+	followings: {
 		type: [{ id: String, profilePic: String, username: String }],
 		default: [],
 	},

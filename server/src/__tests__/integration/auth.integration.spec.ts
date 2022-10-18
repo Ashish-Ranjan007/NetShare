@@ -41,7 +41,7 @@ describe('Integration tests for the register auth route', () => {
 	};
 
 	it('POST /api/auth/register - success - create a new user', async () => {
-		User.findOne = jest.fn().mockResolvedValue(false);
+		User.exists = jest.fn().mockResolvedValue(false);
 		User.create = jest.fn().mockImplementationOnce((x) => x);
 
 		(SendJWTTokens.sendToken as any) = jest
@@ -98,7 +98,7 @@ describe('Integration tests for the register auth route', () => {
 		requestBody.password = 'Password123/';
 		requestBody.confirmPassword = 'Password123/';
 
-		User.findOne = jest.fn().mockResolvedValue(true);
+		User.exists = jest.fn().mockResolvedValue(true);
 
 		const response = await request(app)
 			.post('/api/auth/register')
@@ -109,7 +109,7 @@ describe('Integration tests for the register auth route', () => {
 	});
 
 	it('POST /api/auth/register - failure on existing username', async () => {
-		User.findOne = jest
+		User.exists = jest
 			.fn()
 			.mockResolvedValue(true)
 			.mockResolvedValueOnce(false);
@@ -230,6 +230,10 @@ describe('Integration tests for the refresh-token route', () => {
 		User.findOne = jest.fn().mockResolvedValueOnce({
 			email: 'email',
 			username: 'username',
+			profilePic: 'profilePic',
+			followers: [],
+			followings: [],
+			recentSearches: [],
 			getSignedToken: jest.fn().mockImplementationOnce(() => {
 				return 'accessToken';
 			}),
@@ -251,6 +255,10 @@ describe('Integration tests for the refresh-token route', () => {
 				userObj: {
 					email: 'email',
 					username: 'username',
+					profilePic: 'profilePic',
+					followers: [],
+					followings: [],
+					recentSearches: [],
 				},
 			},
 			error: '',
@@ -427,5 +435,339 @@ describe('Integration tests for add-recent-search route', () => {
 			.send(requestBody);
 
 		expect(response.statusCode).toBe(200);
+	});
+});
+
+describe('Integration tests for follow route', () => {
+	it("POST /api/auth/follow - success - push user into target's followers array and push target into user's followings array", async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		User.findById = jest.fn().mockImplementation(() => ({
+			followers: [],
+			followings: [
+				{
+					id: 'id',
+					username: 'username',
+					profilePic: '',
+				},
+			],
+			_id: '_id',
+			username: 'username123',
+			profilePic: 'profilePic123',
+			save: jest.fn(),
+		}));
+
+		const response = await request(app)
+			.post('/api/auth/follow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	it('POST /api/auth/follow - failure if target or user does not exist', async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		// Three mockResolvedValueOnce are required because this request also goes through
+		// isAuthenticated middleware which calls findById too
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce(false);
+
+		const response = await request(app)
+			.post('/api/auth/follow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(404);
+		expect(response.body.error).toBe('User does not exist');
+	});
+
+	it('POST /api/auth/follow - failure if user already follows target', async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		// Three mockResolvedValueOnce are required because this request also goes through
+		// isAuthenticated middleware which calls findById too
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						id: '_id',
+						username: 'username',
+						profilePic: '',
+					},
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username123',
+				profilePic: 'profilePic123',
+				save: jest.fn(),
+			});
+
+		const response = await request(app)
+			.post('/api/auth/follow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(409);
+		expect(response.body.error).toBe('User is already followed');
+	});
+});
+
+describe('Integration tests for unfollow route', () => {
+	it("POST /api/auth/unfollow - success - remove user from target's followers array and remove target from user's followings array", async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						id: 'targetid',
+						username: 'username123',
+						profilePic: 'profilePic123',
+					},
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: 'targetid',
+				username: 'username123',
+				followers: [
+					{ id: 'userid', profilePic: '', username: 'username' },
+				],
+				profilePic: 'profilePic123',
+				save: jest.fn(),
+			});
+
+		const response = await request(app)
+			.post('/api/auth/unfollow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(200);
+	});
+
+	it('POST /api/auth/unfollow - failure if target or user does not exists', async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						id: 'targetid',
+						username: 'username123',
+						profilePic: 'profilePic123',
+					},
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce(false);
+
+		const response = await request(app)
+			.post('/api/auth/unfollow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(404);
+		expect(response.body.error).toBe('User does not exist');
+	});
+	it('POST /api/auth/unfollow - failure if user doesnt already follows target', async () => {
+		const requestBody = {
+			userId: 'userid',
+			targetId: 'targetid',
+		};
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						id: 'targetid',
+						username: 'username123',
+						profilePic: 'profilePic123',
+					},
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: 'id',
+				username: 'username123',
+				followers: [
+					{ id: 'userid', profilePic: '', username: 'username' },
+				],
+				profilePic: 'profilePic123',
+				save: jest.fn(),
+			});
+
+		const response = await request(app)
+			.post('/api/auth/unfollow')
+			.set('Authorization', 'Bearer token')
+			.set(requestBody);
+
+		expect(response.statusCode).toBe(409);
+		expect(response.body.error).toBe('User is not followed already');
+	});
+});
+
+describe('Integration tests for getFollowers route', () => {
+	it('POST /api/auth/followers - success - if no searchTerm exists return any followers', async () => {
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				select: jest.fn().mockImplementationOnce(() => ({
+					limit: () => [
+						{
+							id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				})),
+			}));
+
+		const response = await request(app)
+			.get('/api/auth/followers')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+
+	it('POST /api/auth/followers - success - if searchTerm exists return followers that match searchTerm', async () => {
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			limit: () => [
+				{
+					id: 'id',
+					profilePic: 'profilePic',
+					username: 'username',
+				},
+			],
+		}));
+
+		const response = await request(app)
+			.get('/api/auth/followers/?searchTerm=username123')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+});
+
+describe('Integration tests for getFollowings route', () => {
+	it('POST /api/auth/followings - success - if no searchTerm exists return any followings', async () => {
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				select: jest.fn().mockImplementationOnce(() => ({
+					limit: () => [
+						{
+							id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				})),
+			}));
+
+		const response = await request(app)
+			.get('/api/auth/followings')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+	it('POST /api/auth/followings - success - if searchTerm exists return followings that match searchTerm', async () => {
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			limit: () => [
+				{
+					id: 'id',
+					profilePic: 'profilePic',
+					username: 'username',
+				},
+			],
+		}));
+
+		const response = await request(app)
+			.get('/api/auth/followings/?searchTerm=username123')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
 	});
 });

@@ -34,7 +34,7 @@ export const isAuthenticated = catchAsyncErrors(
 			);
 		}
 
-		const user = await User.findById(payload._id);
+		const user = await User.findById(payload._id, '_id email username');
 
 		if (!user) {
 			return next(

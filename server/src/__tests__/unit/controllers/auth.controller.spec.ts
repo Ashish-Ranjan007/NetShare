@@ -5,11 +5,15 @@ import { sendToken } from '../../../utils/sendToken';
 import * as VerifyJWT from '../../../utils/verifyJWT';
 import { ErrorHandler } from '../../../utils/ErrorHandler';
 import {
+	follow,
+	getFollowers,
+	getFollowings,
 	getSearchUsers,
 	login,
 	postAddRecentSearch,
 	refreshToken,
 	register,
+	unFollow,
 } from '../../../controllers/auth';
 
 // Mocks
@@ -40,7 +44,7 @@ afterEach(() => {
 
 describe('Register a new user', () => {
 	it('should call next if email already exists', async () => {
-		User.findOne = jest.fn().mockReturnValueOnce({ email: 'asdf' });
+		User.exists = jest.fn().mockReturnValueOnce(true);
 
 		await register(mockRequest, mockResponse, mockNext);
 
@@ -50,10 +54,10 @@ describe('Register a new user', () => {
 	});
 
 	it('should call next if username already exists', async () => {
-		User.findOne = jest
+		User.exists = jest
 			.fn()
-			.mockResolvedValueOnce(Promise.resolve(null))
-			.mockResolvedValueOnce(Promise.resolve({ email: 'asdfadsf' }));
+			.mockResolvedValueOnce(Promise.resolve(false))
+			.mockResolvedValueOnce(Promise.resolve(true));
 
 		await register(mockRequest, mockResponse, mockNext);
 
@@ -63,7 +67,7 @@ describe('Register a new user', () => {
 	});
 
 	it('should call sendToken if username and email doesnt already exists', async () => {
-		User.findOne = jest.fn().mockResolvedValueOnce(null);
+		User.exists = jest.fn().mockResolvedValueOnce(false);
 		User.create = jest.fn().mockReturnValueOnce('x');
 
 		await register(mockRequest, mockResponse, mockNext);
@@ -290,5 +294,225 @@ describe('Add recently searched user to recentSearches field', () => {
 		);
 
 		expect(newMockResponse.status).toHaveBeenCalledWith(201);
+	});
+});
+
+describe('Follow', () => {
+	it('should throw error if user or target do not exists', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce(true)
+			.mockResolvedValueOnce(false);
+
+		await follow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('User does not exist', 404)
+		);
+	});
+
+	it('should throw error if target is already followed by user', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						id: '_id',
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+			});
+
+		await follow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('User is already followed', 409)
+		);
+	});
+
+	it('should call next with 200 status if above conditions are satisfied', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				followings: [
+					{
+						_id: 'id',
+						username: 'username',
+						profilePic: '',
+					},
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username123',
+				profilePic: 'profilePic123',
+				followers: [],
+				save: jest.fn(),
+			});
+
+		await follow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
+	});
+});
+
+describe('UnFollow', () => {
+	it('should throw error if user or target do not exsist', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce(true)
+			.mockResolvedValueOnce(false);
+
+		await unFollow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('User does not exist', 404)
+		);
+	});
+
+	it('should throw error if user does not already follows the target', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				followings: [
+					{ id: 'id', profilePic: '', username: 'username' },
+				],
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+				profilePic: '',
+				username: 'username',
+			});
+
+		await unFollow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('User is not followed already', 409)
+		);
+	});
+
+	it('should call next with 200 status if above conditions are satisfied', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.body = { userId: 'userid', targetId: 'targetid' };
+
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				followings: [
+					{ id: 'targetid', profilePic: '', username: 'username' },
+				],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: 'targetid',
+				profilePic: '',
+				username: 'username',
+				followers: [
+					{ id: 'userid', profilePic: '', username: 'username' },
+				],
+				save: jest.fn(),
+			});
+
+		await unFollow(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
+	});
+});
+
+describe('getFollowers', () => {
+	it('should return random followers if no searchTerm exists in query', async () => {
+		mockRequest.query = {};
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				limit: jest.fn().mockResolvedValueOnce([]),
+			})),
+		}));
+
+		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
+	});
+
+	it('should return followers that match the searchTerm if searchTerm exists in query', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.query = { searchTerm: 'username' };
+
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			limit: jest.fn().mockResolvedValueOnce([]),
+		}));
+
+		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
+	});
+});
+
+describe('getFollowings', () => {
+	it('should return random followings if no searchTerm exists in query', async () => {
+		mockRequest.query = {};
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				limit: jest.fn().mockResolvedValueOnce([]),
+			})),
+		}));
+
+		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
+	});
+
+	it('should return followings that match the searchTerm if searchTerm exists in query', async () => {
+		const newMockResponse: any = {
+			status: jest.fn(),
+		};
+		mockRequest.query = { searchTerm: 'username' };
+
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			limit: jest.fn().mockResolvedValueOnce([]),
+		}));
+
+		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
+
+		expect(newMockResponse.status).toHaveBeenCalledWith(200);
 	});
 });

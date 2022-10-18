@@ -8,6 +8,10 @@ import {
 	getUserDetails,
 	getSearchUsers,
 	postAddRecentSearch,
+	follow,
+	unFollow,
+	getFollowers,
+	getFollowings,
 } from '../controllers/auth';
 import { loginSchema } from '../validationSchema/loginValidator';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
@@ -29,5 +33,9 @@ authRoute.get('/refresh-token', refreshToken);
 authRoute.get('/whoami', [isAuthenticated], getUserDetails);
 authRoute.get('/search', [isAuthenticated], getSearchUsers);
 authRoute.post('/add-recent-search', [isAuthenticated], postAddRecentSearch);
+authRoute.post('/follow', [isAuthenticated], follow);
+authRoute.post('/unfollow', [isAuthenticated], unFollow);
+authRoute.get('/followers', [isAuthenticated], getFollowers);
+authRoute.get('/followings', [isAuthenticated], getFollowings);
 
 export { authRoute };
