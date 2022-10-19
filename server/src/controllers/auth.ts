@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { User } from '../models/User';
+import { User, UserModel, UserSchema } from '../models/User';
 import { verifyJWT } from '../utils/verifyJWT';
 import { sendToken } from '../utils/sendToken';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
+import { Error } from 'mongoose';
 
 // Register a new user
 export const register = catchAsyncErrors(
@@ -103,9 +104,11 @@ export const refreshToken = catchAsyncErrors(
 				true,
 				{
 					userObj: {
+						id: user._id.toString(),
 						email: user.email,
 						username: user.username,
 						profilePic: user.profilePic,
+						friends: user.friends.slice(0, 10),
 						followers: user.followers.slice(0, 10),
 						followings: user.followings.slice(0, 10),
 						recentSearches: user.recentSearches.slice(0, 10),
@@ -212,9 +215,13 @@ export const postAddRecentSearch = catchAsyncErrors(
 // Follow
 export const follow = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { userId, targetId } = req.body;
+		const { targetId } = req.body;
 
-		const user = await User.findById(userId);
+		if (targetId === req.user._id.toString()) {
+			return next(new ErrorHandler('Bad request', 400));
+		}
+
+		const user = await User.findById(req.user._id);
 		const target = await User.findById(targetId);
 
 		// Both user and target user should exist
@@ -236,15 +243,35 @@ export const follow = catchAsyncErrors(
 			profilePic: target.profilePic,
 		});
 
+		// If target already follows user make them friends
+		for (let i = 0; i < user.followers.length; i++) {
+			if (user.followers[i].id === target._id.toString()) {
+				user.friends.push({
+					id: target._id.toString(),
+					username: target.username,
+					profilePic: target.profilePic,
+				});
+				target.friends.push({
+					id: user._id.toString(),
+					username: user.username,
+					profilePic: user.profilePic,
+				});
+
+				break;
+			}
+		}
+
+		// Update user
 		await user.save();
 
 		// Push user into target user's followers array
 		target.followers.push({
-			id: userId,
+			id: user._id.toString(),
 			username: user.username,
 			profilePic: user.profilePic,
 		});
 
+		// Update target
 		await target.save();
 
 		res.status(200).json(new ResponseData(true, {}));
@@ -254,9 +281,13 @@ export const follow = catchAsyncErrors(
 // Unfollow
 export const unFollow = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { userId, targetId } = req.body;
+		const { targetId } = req.body;
 
-		const user = await User.findById(userId);
+		if (targetId === req.user._id.toString()) {
+			return next(new ErrorHandler('Bad request', 400));
+		}
+
+		const user = await User.findById(req.user._id);
 		const target = await User.findById(targetId);
 
 		// Both user and target user should exist
@@ -273,14 +304,28 @@ export const unFollow = catchAsyncErrors(
 			return next(new ErrorHandler('User is not followed already', 409));
 		}
 
-		// Update user
+		// Update user's followings array
 		user.followings = newFollowingsArray;
+
+		// Remove target from user's friends array if present
+		user.friends = user.friends.filter(
+			(friend) => friend.id !== target._id.toString()
+		);
+
+		// Update user
 		await user.save();
 
 		// Remove user from target user's followers array
 		target.followers = target.followers.filter(
-			(follower) => follower.id !== userId
+			(follower) => follower.id !== user._id.toString()
 		);
+
+		// Remove user from target's friends array if present
+		target.friends = target.friends.filter(
+			(friend) => friend.id !== user._id.toString()
+		);
+
+		// Update target
 		await target.save();
 
 		res.status(200).json(new ResponseData(true, {}));
@@ -299,12 +344,24 @@ export const getFollowers = catchAsyncErrors(
 
 			return res
 				.status(200)
-				.json(new ResponseData(true, { results: followers }));
+				.json(
+					new ResponseData(true, { results: followers?.followers })
+				);
 		}
 
 		const followers = await User.find({
-			followers: { username: { $regex: searchTerm, $options: 'i' } },
-		}).limit(20);
+			_id: req.user._id,
+		}).then((doc) => {
+			return doc[0].followers.filter((follower) => {
+				const re = new RegExp(searchTerm.toString(), 'i');
+
+				if (follower.username.match(re)) {
+					return true;
+				} else {
+					false;
+				}
+			});
+		});
 
 		res.status(200).json(new ResponseData(true, { results: followers }));
 	}
@@ -320,15 +377,60 @@ export const getFollowings = catchAsyncErrors(
 				.select('followings')
 				.limit(20);
 
-			res.status(200).json(
-				new ResponseData(true, { results: followings })
-			);
+			return res
+				.status(200)
+				.json(
+					new ResponseData(true, { results: followings?.followings })
+				);
 		}
 
 		const followings = await User.find({
-			followings: { username: { $regex: searchTerm, $options: 'i' } },
-		}).limit(20);
+			_id: req.user._id,
+		}).then((doc) => {
+			return doc[0].followings.filter((following) => {
+				const re = new RegExp(searchTerm.toString(), 'i');
+
+				if (following.username.match(re)) {
+					return true;
+				} else {
+					false;
+				}
+			});
+		});
 
 		res.status(200).json(new ResponseData(true, { results: followings }));
+	}
+);
+
+// Get Friends
+export const getFriends = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { searchTerm } = req.query;
+
+		if (!searchTerm || searchTerm.length === 0) {
+			const friends = await User.findById(req.user._id)
+				.select('friends')
+				.limit(20);
+
+			return res
+				.status(200)
+				.json(new ResponseData(true, { results: friends?.friends }));
+		}
+
+		const friends = await User.find({
+			_id: req.user._id,
+		}).then((doc) => {
+			return doc[0].friends.filter((friend) => {
+				const re = new RegExp(searchTerm.toString(), 'i');
+
+				if (friend.username.match(re)) {
+					return true;
+				} else {
+					false;
+				}
+			});
+		});
+
+		res.status(200).json(new ResponseData(true, { results: friends }));
 	}
 );

@@ -36,9 +36,11 @@ export const sendToken = async (
 				true,
 				{
 					userObj: {
+						id: user._id.toString(),
 						email: user.email,
 						username: user.username,
 						profilePic: user.profilePic,
+						friends: user.friends.slice(0, 10),
 						followers: user.followers.slice(0, 10),
 						followings: user.followings.slice(0, 10),
 						recentSearches: user.recentSearches.slice(0, 10),

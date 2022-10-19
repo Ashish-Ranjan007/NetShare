@@ -12,6 +12,7 @@ import {
 	unFollow,
 	getFollowers,
 	getFollowings,
+	getFriends,
 } from '../controllers/auth';
 import { loginSchema } from '../validationSchema/loginValidator';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
@@ -34,6 +35,7 @@ authRoute.get('/whoami', [isAuthenticated], getUserDetails);
 authRoute.get('/search', [isAuthenticated], getSearchUsers);
 authRoute.post('/add-recent-search', [isAuthenticated], postAddRecentSearch);
 authRoute.post('/follow', [isAuthenticated], follow);
+authRoute.get('/friends', [isAuthenticated], getFriends);
 authRoute.post('/unfollow', [isAuthenticated], unFollow);
 authRoute.get('/followers', [isAuthenticated], getFollowers);
 authRoute.get('/followings', [isAuthenticated], getFollowings);

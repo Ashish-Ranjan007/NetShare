@@ -228,9 +228,11 @@ describe('Integration tests for the logout auth route', () => {
 describe('Integration tests for the refresh-token route', () => {
 	it('GET /api/auth/refresh-token - success - create and send a new accessToken', async () => {
 		User.findOne = jest.fn().mockResolvedValueOnce({
+			_id: 'userid',
 			email: 'email',
 			username: 'username',
 			profilePic: 'profilePic',
+			friends: [],
 			followers: [],
 			followings: [],
 			recentSearches: [],
@@ -253,9 +255,11 @@ describe('Integration tests for the refresh-token route', () => {
 			success: true,
 			data: {
 				userObj: {
+					id: 'userid',
 					email: 'email',
 					username: 'username',
 					profilePic: 'profilePic',
+					friends: [],
 					followers: [],
 					followings: [],
 					recentSearches: [],
@@ -445,20 +449,30 @@ describe('Integration tests for follow route', () => {
 			targetId: 'targetid',
 		};
 
-		User.findById = jest.fn().mockImplementation(() => ({
-			followers: [],
-			followings: [
-				{
-					id: 'id',
-					username: 'username',
-					profilePic: '',
-				},
-			],
-			_id: '_id',
-			username: 'username123',
-			profilePic: 'profilePic123',
-			save: jest.fn(),
-		}));
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({ _id: 'userid' })
+			.mockResolvedValueOnce({
+				_id: 'userid',
+				username: 'username1234',
+				profilePic: 'profilePic1234',
+				followings: [
+					{
+						id: 'id',
+						username: 'username',
+						profilePic: '',
+					},
+				],
+				followers: [],
+				save: jest.fn(),
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username123',
+				profilePic: 'profilePic123',
+				followers: [],
+				save: jest.fn(),
+			});
 
 		const response = await request(app)
 			.post('/api/auth/follow')
@@ -470,7 +484,6 @@ describe('Integration tests for follow route', () => {
 
 	it('POST /api/auth/follow - failure if target or user does not exist', async () => {
 		const requestBody = {
-			userId: 'userid',
 			targetId: 'targetid',
 		};
 
@@ -478,7 +491,7 @@ describe('Integration tests for follow route', () => {
 		// isAuthenticated middleware which calls findById too
 		User.findById = jest
 			.fn()
-			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({})
 			.mockResolvedValueOnce(false);
 
@@ -493,7 +506,6 @@ describe('Integration tests for follow route', () => {
 
 	it('POST /api/auth/follow - failure if user already follows target', async () => {
 		const requestBody = {
-			userId: 'userid',
 			targetId: 'targetid',
 		};
 
@@ -501,7 +513,7 @@ describe('Integration tests for follow route', () => {
 		// isAuthenticated middleware which calls findById too
 		User.findById = jest
 			.fn()
-			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
 				followings: [
 					{
@@ -532,14 +544,14 @@ describe('Integration tests for follow route', () => {
 describe('Integration tests for unfollow route', () => {
 	it("POST /api/auth/unfollow - success - remove user from target's followers array and remove target from user's followings array", async () => {
 		const requestBody = {
-			userId: 'userid',
 			targetId: 'targetid',
 		};
 
 		User.findById = jest
 			.fn()
-			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
+				_id: 'userId',
 				followings: [
 					{
 						id: 'targetid',
@@ -547,6 +559,7 @@ describe('Integration tests for unfollow route', () => {
 						profilePic: 'profilePic123',
 					},
 				],
+				friends: [],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
@@ -555,6 +568,7 @@ describe('Integration tests for unfollow route', () => {
 				followers: [
 					{ id: 'userid', profilePic: '', username: 'username' },
 				],
+				friends: [],
 				profilePic: 'profilePic123',
 				save: jest.fn(),
 			});
@@ -569,13 +583,12 @@ describe('Integration tests for unfollow route', () => {
 
 	it('POST /api/auth/unfollow - failure if target or user does not exists', async () => {
 		const requestBody = {
-			userId: 'userid',
 			targetId: 'targetid',
 		};
 
 		User.findById = jest
 			.fn()
-			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
 				followings: [
 					{
@@ -598,13 +611,12 @@ describe('Integration tests for unfollow route', () => {
 	});
 	it('POST /api/auth/unfollow - failure if user doesnt already follows target', async () => {
 		const requestBody = {
-			userId: 'userid',
 			targetId: 'targetid',
 		};
 
 		User.findById = jest
 			.fn()
-			.mockResolvedValueOnce({})
+			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
 				followings: [
 					{
@@ -642,13 +654,15 @@ describe('Integration tests for getFollowers route', () => {
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
 				select: jest.fn().mockImplementationOnce(() => ({
-					limit: () => [
-						{
-							id: 'id',
-							profilePic: 'profilePic',
-							username: 'username',
-						},
-					],
+					limit: () => ({
+						followers: [
+							{
+								id: 'id',
+								profilePic: 'profilePic',
+								username: 'username',
+							},
+						],
+					}),
 				})),
 			}));
 
@@ -674,7 +688,7 @@ describe('Integration tests for getFollowers route', () => {
 
 	it('POST /api/auth/followers - success - if searchTerm exists return followers that match searchTerm', async () => {
 		User.find = jest.fn().mockImplementationOnce(() => ({
-			limit: () => [
+			then: () => [
 				{
 					id: 'id',
 					profilePic: 'profilePic',
@@ -711,13 +725,15 @@ describe('Integration tests for getFollowings route', () => {
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
 				select: jest.fn().mockImplementationOnce(() => ({
-					limit: () => [
-						{
-							id: 'id',
-							profilePic: 'profilePic',
-							username: 'username',
-						},
-					],
+					limit: () => ({
+						followings: [
+							{
+								id: 'id',
+								profilePic: 'profilePic',
+								username: 'username',
+							},
+						],
+					}),
 				})),
 			}));
 
@@ -740,9 +756,10 @@ describe('Integration tests for getFollowings route', () => {
 			error: '',
 		});
 	});
+
 	it('POST /api/auth/followings - success - if searchTerm exists return followings that match searchTerm', async () => {
 		User.find = jest.fn().mockImplementationOnce(() => ({
-			limit: () => [
+			then: () => [
 				{
 					id: 'id',
 					profilePic: 'profilePic',
@@ -753,6 +770,77 @@ describe('Integration tests for getFollowings route', () => {
 
 		const response = await request(app)
 			.get('/api/auth/followings/?searchTerm=username123')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+});
+
+describe('Integration tests for getFriends route', () => {
+	it('GET /api/auth/friends - success - if no searchTerm exists return any friends', async () => {
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				select: jest.fn().mockImplementationOnce(() => ({
+					limit: () => ({
+						friends: [
+							{
+								id: 'id',
+								profilePic: 'profilePic',
+								username: 'username',
+							},
+						],
+					}),
+				})),
+			}));
+
+		const response = await request(app)
+			.get('/api/auth/friends')
+			.set('Authorization', 'Bearer token');
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: {
+				results: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			},
+			error: '',
+		});
+	});
+
+	it('POST /api/auth/friends - success - if searchTerm exists return friends that match searchTerm', async () => {
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			then: () => [
+				{
+					id: 'id',
+					profilePic: 'profilePic',
+					username: 'username',
+				},
+			],
+		}));
+
+		const response = await request(app)
+			.get('/api/auth/friends/?searchTerm=username123')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);

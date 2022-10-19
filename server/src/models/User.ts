@@ -17,9 +17,10 @@ export interface IUser {
 	password: string;
 	refreshToken: string;
 	profilePic: string;
-	recentSearches: ProfileReference[];
+	friends: ProfileReference[];
 	followers: ProfileReference[];
 	followings: ProfileReference[];
+	recentSearches: ProfileReference[];
 }
 
 export interface IUserMethods {
@@ -67,6 +68,10 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	profilePic: {
 		type: String,
 		default: '',
+	},
+	friends: {
+		type: [{ id: String, profilePic: String, username: String }],
+		default: [],
 	},
 	recentSearches: {
 		type: [{ id: String, profilePic: String, username: String }],
