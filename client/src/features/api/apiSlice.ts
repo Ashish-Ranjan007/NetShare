@@ -8,6 +8,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { RootState } from '../../app/store';
 import { logout, setCredentials } from '../auth/authSlice';
+import { ResponseType } from '../../@types/responseType';
 
 // Instantiate a new mutex object
 const mutex = new Mutex();
@@ -57,15 +58,9 @@ const baseQueryWithReauth: BaseQueryFn<
 				);
 
 				if (refreshResult.data) {
-					// store the credentials
 					api.dispatch(
 						setCredentials({
-							email: refreshResult.data.data.userObj.email,
-							username: refreshResult.data.data.userObj.username,
-							profilePic:
-								refreshResult.data.data.userObj.profilePic,
-							recentSearches:
-								refreshResult.data.data.userObj.profilePic,
+							...refreshResult.data.data.userObj,
 							accessToken: refreshResult.data.token,
 							isAuthenticated: true,
 						})

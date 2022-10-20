@@ -5,7 +5,7 @@ import {
 	ListItemText,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ProfileReference } from '../../../@types/responseType';
 
 const defaultProfilePic =

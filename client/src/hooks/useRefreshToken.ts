@@ -12,10 +12,7 @@ export function useRefreshToken() {
 		if (isSuccess) {
 			dispatch(
 				setCredentials({
-					email: data.data.userObj.email,
-					username: data.data.userObj.username,
-					profilePic: data.data.userObj.profilePic,
-					recentSearches: data.data.userObj.recentSearches,
+					...data.data.userObj,
 					accessToken: data.token,
 					isAuthenticated: true,
 				})

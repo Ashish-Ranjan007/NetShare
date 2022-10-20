@@ -1,6 +1,6 @@
 export const FEED = '/feed';
 export const EXPLORE = '/explore';
-export const PROFILE = '/profile/:userId';
+export const PROFILE = '/profile/:username/';
 export const MESSAGES = '/messages';
 export const SETTINGS = '/settings';
 export const NOTIFICATIONS = '/notifications';
@@ -8,3 +8,4 @@ export const LOGIN = '/login';
 export const SIGNUP = '/signup';
 export const HOME = '/';
 export const SEARCH = '/search/:searchTerm';
+export const FRIENDS = '/friends';

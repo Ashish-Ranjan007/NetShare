@@ -5,18 +5,19 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import IsUserLoggedIn from './components/Auth/IsUserLoggedIn';
 
 const Layout = lazy(() => import('./pages/Layout'));
+const FeedPage = lazy(() => import('./pages/FeedPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const SignupPage = lazy(() => import('./pages/SignupPage'));
-const FeedPage = lazy(() => import('./pages/FeedPage'));
+const FriendsPage = lazy(() => import('./pages/FriendsPage'));
 const ExplorePage = lazy(() => import('./pages/ExplorePage'));
-const MessagesPage = lazy(() => import('./pages/MessagesPage'));
-const NotificationPage = lazy(() => import('./pages/NotificationPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 
 import { useAppDispatch, useAppSelector } from './app/hooks';
-import { setCredentials } from './features/auth/authSlice';
+import { logout, setCredentials } from './features/auth/authSlice';
 import { useGetRefreshTokenQuery } from './features/auth/authApiSlice';
 import {
 	EXPLORE,
@@ -28,6 +29,7 @@ import {
 	SETTINGS,
 	SIGNUP,
 	SEARCH,
+	FRIENDS,
 } from './constants/routes';
 
 const App: React.FC = () => {
@@ -39,10 +41,7 @@ const App: React.FC = () => {
 		if (isSuccess) {
 			dispatch(
 				setCredentials({
-					email: data.data.userObj.email,
-					username: data.data.userObj.username,
-					profilePic: data.data.userObj.profilePic,
-					recentSearches: data.data.userObj.recentSearches,
+					...data.data.userObj,
 					accessToken: data.token,
 					isAuthenticated: true,
 				})
@@ -50,16 +49,7 @@ const App: React.FC = () => {
 		}
 
 		if (isError) {
-			dispatch(
-				setCredentials({
-					email: '',
-					username: '',
-					profilePic: '',
-					accessToken: '',
-					recentSearches: [],
-					isAuthenticated: false,
-				})
-			);
+			dispatch(logout());
 		}
 	}, [data, isSuccess]);
 
@@ -82,8 +72,9 @@ const App: React.FC = () => {
 							path={NOTIFICATIONS}
 							element={<NotificationPage />}
 						/>
-						<Route path={SETTINGS} element={<SettingsPage />} />
+						<Route path={FRIENDS} element={<FriendsPage />} />
 						<Route path={PROFILE} element={<ProfilePage />} />
+						<Route path={SETTINGS} element={<SettingsPage />} />
 						<Route path={SEARCH} element={<SearchResultsPage />} />
 					</Route>
 					<Route

@@ -1,21 +1,26 @@
+import { ProfileReference } from '../../@types/responseType';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type AuthState = {
+	id: string;
 	email: string;
 	username: string;
 	profilePic: string;
 	accessToken: string;
-	recentSearches: {
-		id: string;
-		profilePic: string;
-		username: string;
-	}[];
+	friends: ProfileReference[];
+	followers: ProfileReference[];
+	followings: ProfileReference[];
 	isAuthenticated: boolean | null;
+	recentSearches: ProfileReference[];
 };
 
 const initialState: AuthState = {
+	id: '',
 	email: '',
+	friends: [],
 	username: '',
+	followers: [],
+	followings: [],
 	profilePic: '',
 	accessToken: '',
 	recentSearches: [],
@@ -27,35 +32,19 @@ export const authSlice = createSlice({
 	initialState: initialState,
 	reducers: {
 		setCredentials: (state, action: PayloadAction<AuthState>) => {
-			const {
-				email,
-				username,
-				accessToken,
-				isAuthenticated,
-				profilePic,
-				recentSearches,
-			} = action.payload;
-
-			state.email = email;
-			state.username = username;
-			state.profilePic = profilePic;
-			state.accessToken = accessToken;
-			state.recentSearches = recentSearches;
-			state.isAuthenticated = isAuthenticated;
+			return action.payload;
 		},
 		logout: (state) => {
-			state.email = '';
-			state.username = '';
-			state.profilePic = '';
-			state.accessToken = '';
-			state.recentSearches = [];
-			state.isAuthenticated = false;
+			return { ...initialState, isAuthenticated: false };
+		},
+		setRecentSearches: (state, action: PayloadAction<ProfileReference>) => {
+			state.recentSearches.push(action.payload);
 		},
 	},
 });
 
 // Export action creators
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, logout, setRecentSearches } = authSlice.actions;
 
 // Export reducers
 export default authSlice.reducer;

@@ -1,12 +1,12 @@
 import { InputAdornment, TextField } from '@mui/material';
-import React, { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { FiSearch } from 'react-icons/fi';
 
 type Props = {
 	setSearchTerm: Dispatch<SetStateAction<string>>;
 };
 
-const SearchFriends = ({ setSearchTerm }: Props) => {
+const SearchBar = ({ setSearchTerm }: Props) => {
 	return (
 		<>
 			<form>
@@ -22,6 +22,9 @@ const SearchFriends = ({ setSearchTerm }: Props) => {
 							</InputAdornment>
 						),
 					}}
+					inputProps={{
+						'data-testid': 'friends-searchbar',
+					}}
 					onChange={(e) => setSearchTerm(e.target.value)}
 				/>
 			</form>
@@ -29,4 +32,4 @@ const SearchFriends = ({ setSearchTerm }: Props) => {
 	);
 };
 
-export default SearchFriends;
+export default SearchBar;

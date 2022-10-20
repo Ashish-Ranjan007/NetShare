@@ -55,10 +55,7 @@ const SignupForm = () => {
 
 			dispatch(
 				setCredentials({
-					email: returned.data.userObj.email,
-					username: returned.data.userObj.username,
-					profilePic: returned.data.userObj.profilePic,
-					recentSearches: returned.data.userObj.recentSearches,
+					...returned.data.userObj,
 					accessToken: returned.token,
 					isAuthenticated: true,
 				})

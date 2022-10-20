@@ -12,7 +12,8 @@ import axios from 'axios';
 import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
+import { setRecentSearches } from '../../../features/auth/authSlice';
 
 type Props = {
 	mobile?: boolean;
@@ -26,6 +27,7 @@ type Profile = {
 
 const Searchbar = ({ mobile = false }: Props) => {
 	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
 	const auth = useAppSelector((state) => state.auth);
 
 	const [show, setShow] = useState<boolean>(false);
@@ -37,6 +39,10 @@ const Searchbar = ({ mobile = false }: Props) => {
         to get a maximum of 7 users who have searchTerm in their firstname, lastname or username.
     */
 	useEffect(() => {
+		if (searchTerm.length === 0 && show) {
+			setShow(false);
+		}
+
 		if (searchTerm.length > 0) {
 			const timeOutId = setTimeout(() => {
 				(async () => {
@@ -65,7 +71,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 
 					setQueryProfiles(results);
 				})();
-			}, 1000);
+			}, 500);
 
 			return () => clearTimeout(timeOutId);
 		}
@@ -91,12 +97,17 @@ const Searchbar = ({ mobile = false }: Props) => {
 
 	// mouseDown instead of click because blur event is fired before click
 	// which closes the dropdown so click event is not fired
-	const handleMouseDown = async (userId: String) => {
+	const handleMouseDown = async (
+		id: string,
+		username: string,
+		profilePic: string
+	) => {
 		// add clicked user to recentSearches in database and then redirect to clicked user's profile
+
 		await axios.post(
 			'http://localhost:8000/api/auth/add-recent-search',
 			{
-				userId: userId,
+				userId: id,
 			},
 			{
 				headers: {
@@ -105,7 +116,30 @@ const Searchbar = ({ mobile = false }: Props) => {
 			}
 		);
 
-		navigate(`/profile/${userId}`);
+		// Reset searchTerm
+		setSearchTerm('');
+
+		// Check if user already exists in recentSearches state
+		let found = false;
+		for (let i = 0; i < auth.recentSearches.length; i++) {
+			if (auth.recentSearches[i].id === id) {
+				found = true;
+				break;
+			}
+		}
+
+		// if not push it into recentSearches state
+		if (!found) {
+			dispatch(
+				setRecentSearches({
+					id: id,
+					username: username,
+					profilePic: profilePic,
+				})
+			);
+		}
+
+		navigate(`/profile/${username}`);
 	};
 
 	// Dropdown also closes on submit
@@ -114,6 +148,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 
 		// navigate to search page on submit
 		if (searchTerm.length > 0) {
+			setSearchTerm('');
 			setShow(false);
 			navigate(`/search/${searchTerm}`);
 		}
@@ -196,7 +231,13 @@ const Searchbar = ({ mobile = false }: Props) => {
 						<ListItem sx={{ padding: '0px' }} key={result.id}>
 							<ListItemButton
 								sx={{ padding: '8px 8px' }}
-								onMouseDown={() => handleMouseDown(result.id)}
+								onMouseDown={() =>
+									handleMouseDown(
+										result.id,
+										result.username,
+										result.profilePic
+									)
+								}
 							>
 								<ListItemIcon>
 									<Box

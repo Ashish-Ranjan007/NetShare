@@ -1,13 +1,19 @@
+export type ProfileReference = {
+	id: string;
+	profilePic: string;
+	username: string;
+};
+
 type DataType = {
 	userObj: {
+		id: string;
 		email: string;
 		username: string;
 		profilePic: string;
-		recentSearches: {
-			id: string;
-			profilePic: string;
-			username: string;
-		}[];
+		friends: ProfileReference[];
+		followers: ProfileReference[];
+		followings: ProfileReference[];
+		recentSearches: ProfileReference[];
 	};
 };
 

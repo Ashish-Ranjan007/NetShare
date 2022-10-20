@@ -1,12 +1,12 @@
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+import SearchBar from './SearchBar';
 import FriendList from './FriendList';
-import SearchFriends from './SearchFriends';
 import { useAppSelector } from '../../app/hooks';
 import { ProfileReference } from '../../@types/responseType';
 
-const Sidebar = () => {
+const Friends = () => {
 	const auth = useAppSelector((state) => state.auth);
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [friendsList, setFriendsList] = useState<ProfileReference[]>([]);
@@ -31,11 +31,11 @@ const Sidebar = () => {
 	}, [searchTerm]);
 
 	return (
-		<Box sx={{ paddingTop: '8px', display: { xs: 'none', sm: 'block' } }}>
-			<SearchFriends setSearchTerm={setSearchTerm} />
+		<Box>
+			<SearchBar setSearchTerm={setSearchTerm} />
 			<FriendList friends={friendsList} />
 		</Box>
 	);
 };
 
-export default Sidebar;
+export default Friends;

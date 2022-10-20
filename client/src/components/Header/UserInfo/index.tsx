@@ -21,27 +21,28 @@ const UserInfo = () => {
 				}}
 			>
 				<Link
-					to="/profile"
-					style={{ textDecoration: 'none', color: '#4E5D78' }}
+					to={`/profile/${auth.username}`}
+					style={{
+						textDecoration: 'none',
+						color: '#4E5D78',
+					}}
 				>
 					{auth.username}
 				</Link>
 			</Typography>
-			<Link to="/profile">
-				<Box
-					component="img"
-					sx={{
-						width: 32,
-						borderRadius: '10px',
-					}}
-					src={
-						auth.profilePic?.length > 0
-							? auth.profilePic
-							: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80'
-					}
-					alt="logo image"
-				/>
-			</Link>
+			<Box
+				component="img"
+				sx={{
+					width: 32,
+					borderRadius: '10px',
+				}}
+				src={
+					auth.profilePic?.length > 0
+						? auth.profilePic
+						: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80'
+				}
+				alt="logo image"
+			/>
 		</Stack>
 	);
 };

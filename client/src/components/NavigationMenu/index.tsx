@@ -14,18 +14,18 @@ import {
 	Person,
 	Settings,
 	Logout,
+	People,
 } from '@mui/icons-material';
 import {
 	EXPLORE,
 	FEED,
 	MESSAGES,
 	NOTIFICATIONS,
-	PROFILE,
 	SETTINGS,
 } from '../../constants/routes';
 import { NavLink } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { logout } from '../../features/auth/authSlice';
 import { useLogoutMutation } from '../../features/auth/authApiSlice';
 
@@ -34,42 +34,43 @@ type Props = {
 	setToggle: Dispatch<SetStateAction<boolean>>;
 };
 
-const navList = [
-	{
-		name: 'Feed',
-		icon: <RssFeed />,
-		link: FEED,
-	},
-	{
-		name: 'Explore',
-		icon: <Explore />,
-		link: EXPLORE,
-	},
-	{
-		name: 'Messages',
-		icon: <Message />,
-		link: MESSAGES,
-	},
-	{
-		name: 'Notification',
-		icon: <Notifications />,
-		link: NOTIFICATIONS,
-	},
-	{
-		name: 'Settings',
-		icon: <Settings />,
-		link: SETTINGS,
-	},
-	{
-		name: 'Profile',
-		icon: <Person />,
-		link: PROFILE,
-	},
-];
-
 const NavigationMenu = (props: Props) => {
 	const dispatch = useAppDispatch();
 	const [postLogout] = useLogoutMutation();
+	const auth = useAppSelector((state) => state.auth);
+
+	const navList = [
+		{
+			name: 'Feed',
+			icon: <RssFeed />,
+			link: FEED,
+		},
+		{
+			name: 'Explore',
+			icon: <Explore />,
+			link: EXPLORE,
+		},
+		{
+			name: 'Messages',
+			icon: <Message />,
+			link: MESSAGES,
+		},
+		{
+			name: 'Notification',
+			icon: <Notifications />,
+			link: NOTIFICATIONS,
+		},
+		{
+			name: 'Settings',
+			icon: <Settings />,
+			link: SETTINGS,
+		},
+		{
+			name: 'Profile',
+			icon: <Person />,
+			link: `/profile/${auth.username}`,
+		},
+	];
 
 	const handleClick = async () => {
 		await postLogout();
@@ -98,7 +99,7 @@ const NavigationMenu = (props: Props) => {
 		>
 			<List sx={{ width: '100%' }}>
 				{navList.map((nav) => (
-					<ListItem sx={{ padding: '0px' }}>
+					<ListItem sx={{ padding: '0px' }} key={nav.name}>
 						<NavLink
 							to={nav.link}
 							style={{
@@ -107,7 +108,6 @@ const NavigationMenu = (props: Props) => {
 								textDecoration: 'none',
 								color: 'inherit',
 							}}
-							key={nav.name}
 							onClick={() => props.setToggle((prev) => !prev)}
 						>
 							<ListItemButton>
@@ -120,6 +120,25 @@ const NavigationMenu = (props: Props) => {
 						</NavLink>
 					</ListItem>
 				))}
+				<ListItem sx={{ padding: '0px', display: { md: 'none' } }}>
+					<NavLink
+						to="/friends"
+						style={{
+							width: '100%',
+							display: 'block',
+							textDecoration: 'none',
+							color: 'inherit',
+						}}
+						onClick={() => props.setToggle((prev) => !prev)}
+					>
+						<ListItemButton>
+							<ListItemIcon>
+								<People />
+							</ListItemIcon>
+							<ListItemText primary="Friends" />
+						</ListItemButton>
+					</NavLink>
+				</ListItem>
 				<ListItem onClick={handleClick} sx={{ padding: '0px' }}>
 					<ListItemButton>
 						<ListItemIcon>

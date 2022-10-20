@@ -29,6 +29,7 @@ describe('Searchbar', () => {
 	it('should open a submenu of recent searches when searchbar is focused', async () => {
 		store.dispatch(
 			setCredentials({
+				id: 'userid',
 				email: 'email@email.com',
 				username: 'username123',
 				profilePic: 'profilePic',
@@ -39,6 +40,9 @@ describe('Searchbar', () => {
 						profilePic: 'profilePic',
 					},
 				],
+				friends: [],
+				followers: [],
+				followings: [],
 				accessToken: 'accessToken',
 				isAuthenticated: true,
 			})
@@ -58,6 +62,7 @@ describe('Searchbar', () => {
 	it('should close the submenu of recent searches when user clicks outside', async () => {
 		store.dispatch(
 			setCredentials({
+				id: 'userid',
 				email: 'email@email.com',
 				username: 'username123',
 				profilePic: 'profilePic',
@@ -68,6 +73,9 @@ describe('Searchbar', () => {
 						profilePic: 'profilePic',
 					},
 				],
+				friends: [],
+				followers: [],
+				followings: [],
 				accessToken: 'accessToken',
 				isAuthenticated: true,
 			})
