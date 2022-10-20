@@ -468,9 +468,7 @@ describe('getFollowers', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockImplementationOnce(() => ({
-				limit: jest.fn().mockResolvedValueOnce({ followers: [] }),
-			})),
+			select: jest.fn().mockResolvedValueOnce({ followers: [] }),
 		}));
 
 		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
@@ -502,9 +500,7 @@ describe('getFollowings', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockImplementationOnce(() => ({
-				limit: jest.fn().mockResolvedValueOnce({ followings: [] }),
-			})),
+			select: jest.fn().mockResolvedValueOnce({ followings: [] }),
 		}));
 
 		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
@@ -536,9 +532,7 @@ describe('getFriends', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockImplementationOnce(() => ({
-				limit: jest.fn().mockResolvedValueOnce({ friends: [] }),
-			})),
+			select: jest.fn().mockResolvedValueOnce({ friends: [] }),
 		}));
 
 		await getFriends(mockRequest, newMockResponse as Response, mockNext);

@@ -106,9 +106,9 @@ export const refreshToken = catchAsyncErrors(
 					userObj: {
 						id: user._id.toString(),
 						email: user.email,
+						friends: user.friends,
 						username: user.username,
 						profilePic: user.profilePic,
-						friends: user.friends.slice(0, 10),
 						followers: user.followers.slice(0, 10),
 						followings: user.followings.slice(0, 10),
 						recentSearches: user.recentSearches.slice(0, 10),
@@ -338,9 +338,9 @@ export const getFollowers = catchAsyncErrors(
 		const { searchTerm } = req.query;
 
 		if (!searchTerm || searchTerm.length === 0) {
-			const followers = await User.findById(req.user._id)
-				.select('followers')
-				.limit(20);
+			const followers = await User.findById(req.user._id).select(
+				'followers'
+			);
 
 			return res
 				.status(200)
@@ -373,9 +373,9 @@ export const getFollowings = catchAsyncErrors(
 		const { searchTerm } = req.query;
 
 		if (!searchTerm || searchTerm.length === 0) {
-			const followings = await User.findById(req.user._id)
-				.select('followings')
-				.limit(20);
+			const followings = await User.findById(req.user._id).select(
+				'followings'
+			);
 
 			return res
 				.status(200)
@@ -408,9 +408,7 @@ export const getFriends = catchAsyncErrors(
 		const { searchTerm } = req.query;
 
 		if (!searchTerm || searchTerm.length === 0) {
-			const friends = await User.findById(req.user._id)
-				.select('friends')
-				.limit(20);
+			const friends = await User.findById(req.user._id).select('friends');
 
 			return res
 				.status(200)

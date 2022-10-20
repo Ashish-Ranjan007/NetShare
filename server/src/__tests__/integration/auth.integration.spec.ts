@@ -653,17 +653,15 @@ describe('Integration tests for getFollowers route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: jest.fn().mockImplementationOnce(() => ({
-					limit: () => ({
-						followers: [
-							{
-								id: 'id',
-								profilePic: 'profilePic',
-								username: 'username',
-							},
-						],
-					}),
-				})),
+				select: () => ({
+					followers: [
+						{
+							id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				}),
 			}));
 
 		const response = await request(app)
@@ -724,17 +722,15 @@ describe('Integration tests for getFollowings route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: jest.fn().mockImplementationOnce(() => ({
-					limit: () => ({
-						followings: [
-							{
-								id: 'id',
-								profilePic: 'profilePic',
-								username: 'username',
-							},
-						],
-					}),
-				})),
+				select: () => ({
+					followings: [
+						{
+							id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				}),
 			}));
 
 		const response = await request(app)
@@ -795,17 +791,15 @@ describe('Integration tests for getFriends route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: jest.fn().mockImplementationOnce(() => ({
-					limit: () => ({
-						friends: [
-							{
-								id: 'id',
-								profilePic: 'profilePic',
-								username: 'username',
-							},
-						],
-					}),
-				})),
+				select: () => ({
+					friends: [
+						{
+							id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				}),
 			}));
 
 		const response = await request(app)
