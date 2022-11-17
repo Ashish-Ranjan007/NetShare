@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/extend-expect';
 
 // src/setupTests.js
 import { server } from './src/mocks/server';

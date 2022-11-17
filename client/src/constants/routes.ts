@@ -9,3 +9,5 @@ export const SIGNUP = '/signup';
 export const HOME = '/';
 export const SEARCH = '/search/:searchTerm';
 export const FRIENDS = '/friends';
+export const CREATE = '/create';
+export const POST = '/post/:postId';

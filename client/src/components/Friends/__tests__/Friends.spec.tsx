@@ -1,5 +1,5 @@
 import 'whatwg-fetch';
-import { describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import Friends from '..';
 import { store } from '../../../app/store';
 import { setCredentials } from '../../../features/auth/authSlice';

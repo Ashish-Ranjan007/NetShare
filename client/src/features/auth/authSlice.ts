@@ -1,4 +1,4 @@
-import { ProfileReference } from '../../@types/responseType';
+import { ProfileReference, NotificationType } from '../../@types/responseType';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type AuthState = {
@@ -7,10 +7,15 @@ export type AuthState = {
 	username: string;
 	profilePic: string;
 	accessToken: string;
+	postsCount: number;
+	friendsCount: number;
+	followersCount: number;
+	followingsCount: number;
 	friends: ProfileReference[];
 	followers: ProfileReference[];
 	followings: ProfileReference[];
 	isAuthenticated: boolean | null;
+	notifications: NotificationType[];
 	recentSearches: ProfileReference[];
 };
 
@@ -23,6 +28,11 @@ const initialState: AuthState = {
 	followings: [],
 	profilePic: '',
 	accessToken: '',
+	postsCount: 0,
+	friendsCount: 0,
+	followersCount: 0,
+	notifications: [],
+	followingsCount: 0,
 	recentSearches: [],
 	isAuthenticated: null,
 };

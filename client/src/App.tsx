@@ -8,11 +8,13 @@ const Layout = lazy(() => import('./pages/Layout'));
 const FeedPage = lazy(() => import('./pages/FeedPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const SignupPage = lazy(() => import('./pages/SignupPage'));
+const CreatePage = lazy(() => import('./pages/CreatePage'));
 const FriendsPage = lazy(() => import('./pages/FriendsPage'));
 const ExplorePage = lazy(() => import('./pages/ExplorePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const SinglePostPage = lazy(() => import('./pages/SinglePostPage'));
 const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 
@@ -30,6 +32,8 @@ import {
 	SIGNUP,
 	SEARCH,
 	FRIENDS,
+	CREATE,
+	POST,
 } from './constants/routes';
 
 const App: React.FC = () => {
@@ -67,11 +71,13 @@ const App: React.FC = () => {
 					>
 						<Route path={FEED} element={<FeedPage />} />
 						<Route path={EXPLORE} element={<ExplorePage />} />
+						<Route path={CREATE} element={<CreatePage />} />
 						<Route path={MESSAGES} element={<MessagesPage />} />
 						<Route
 							path={NOTIFICATIONS}
 							element={<NotificationPage />}
 						/>
+						<Route path={POST} element={<SinglePostPage />} />
 						<Route path={FRIENDS} element={<FriendsPage />} />
 						<Route path={PROFILE} element={<ProfilePage />} />
 						<Route path={SETTINGS} element={<SettingsPage />} />

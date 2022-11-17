@@ -15,8 +15,10 @@ import {
 	Settings,
 	Logout,
 	People,
+	AddCircle,
 } from '@mui/icons-material';
 import {
+	CREATE,
 	EXPLORE,
 	FEED,
 	MESSAGES,
@@ -49,6 +51,11 @@ const NavigationMenu = (props: Props) => {
 			name: 'Explore',
 			icon: <Explore />,
 			link: EXPLORE,
+		},
+		{
+			name: 'Create',
+			icon: <AddCircle />,
+			link: CREATE,
 		},
 		{
 			name: 'Messages',

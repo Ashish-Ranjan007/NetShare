@@ -4,15 +4,26 @@ export type ProfileReference = {
 	username: string;
 };
 
+type NotificationType = {
+	user: ProfileReference;
+	action: 'like' | 'comment' | 'follow';
+	contentType: 'comment' | 'post' | 'profile';
+};
+
 type DataType = {
 	userObj: {
 		id: string;
 		email: string;
 		username: string;
 		profilePic: string;
+		postsCount: number;
+		friendsCount: number;
+		followersCount: number;
+		followingsCount: number;
 		friends: ProfileReference[];
 		followers: ProfileReference[];
 		followings: ProfileReference[];
+		notifications: NotificationType[];
 		recentSearches: ProfileReference[];
 	};
 };
