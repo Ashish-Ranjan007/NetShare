@@ -41,7 +41,9 @@ const SearchResultsPage = () => {
 	};
 
 	useEffect(() => {
-		fetchMore();
+		if (profiles.length === 0) {
+			fetchMore();
+		}
 	}, []);
 
 	return (

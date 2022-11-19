@@ -69,7 +69,7 @@ const App: React.FC = () => {
 							</ProtectedRoute>
 						}
 					>
-						<Route path={FEED} element={<FeedPage />} />
+						<Route index element={<FeedPage />} />
 						<Route path={EXPLORE} element={<ExplorePage />} />
 						<Route path={CREATE} element={<CreatePage />} />
 						<Route path={MESSAGES} element={<MessagesPage />} />

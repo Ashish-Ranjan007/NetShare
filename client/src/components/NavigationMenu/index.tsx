@@ -45,7 +45,7 @@ const NavigationMenu = (props: Props) => {
 		{
 			name: 'Feed',
 			icon: <RssFeed />,
-			link: FEED,
+			link: '/',
 		},
 		{
 			name: 'Explore',

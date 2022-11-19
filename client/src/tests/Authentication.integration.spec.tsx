@@ -84,7 +84,7 @@ describe('Login', () => {
 
 		await userEvent.click(submitBtn);
 
-		const feedText = await screen.findByText(/feedpage/i);
+		const feedText = await screen.findByText(/Feed/i);
 
 		await waitFor(() => expect(feedText).toBeInTheDocument());
 	});

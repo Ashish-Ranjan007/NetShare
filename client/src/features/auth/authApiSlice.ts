@@ -52,6 +52,16 @@ const authApiSlice = apiSlice.injectEndpoints({
 				url: '/auth/whoami',
 			}),
 		}),
+		unFollow: builder.mutation<
+			{ success: boolean; data: {}; error: string },
+			string
+		>({
+			query: (userId) => ({
+				url: '/auth/unfollow',
+				method: 'POST',
+				body: { targetId: userId },
+			}),
+		}),
 	}),
 });
 
@@ -61,4 +71,5 @@ export const {
 	useRegisterMutation,
 	useGetUserDetailsQuery,
 	useGetRefreshTokenQuery,
+	useUnFollowMutation,
 } = authApiSlice;

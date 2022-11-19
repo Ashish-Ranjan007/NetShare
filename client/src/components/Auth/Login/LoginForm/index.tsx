@@ -49,7 +49,7 @@ const LoginForm = () => {
 				})
 			);
 
-			navigate('/feed');
+			navigate('/');
 		} catch (error: any) {
 			console.log(error);
 			setLoginError(error.data.error);

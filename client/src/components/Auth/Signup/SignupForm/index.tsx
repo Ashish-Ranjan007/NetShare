@@ -5,10 +5,10 @@ import { Button, createTheme, Stack, ThemeProvider } from '@mui/material';
 
 import Toast from '../../../Toast/Toast';
 import FormControl from '../../../FormControl';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../../../app/hooks';
 import { setCredentials } from '../../../../features/auth/authSlice';
 import { useRegisterMutation } from '../../../../features/auth/authApiSlice';
-import { useNavigate } from 'react-router-dom';
 
 interface Values {
 	firstname: string;
@@ -61,7 +61,7 @@ const SignupForm = () => {
 				})
 			);
 
-			navigate('/feed');
+			navigate('/');
 		} catch (error: any) {
 			console.log(error);
 			setSignupError(error.data.error);

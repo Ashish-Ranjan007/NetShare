@@ -10,7 +10,7 @@ const IsUserLoggedIn = ({ children }: Props): JSX.Element => {
 	const auth = useAppSelector((state) => state.auth);
 
 	if (auth.isAuthenticated) {
-		return <Navigate to={FEED} replace />;
+		return <Navigate to="/" replace />;
 	}
 
 	return children;
