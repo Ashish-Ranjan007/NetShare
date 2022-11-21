@@ -103,7 +103,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 				title={
 					<Link
 						style={{ color: 'inherit', fontWeight: '500' }}
-						to={`/profile/${post.createdBy.username}`}
+						to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
 					>
 						{post.createdBy.username}
 					</Link>
@@ -115,7 +115,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 			</CardMedia>
 			<CardContent>
 				<Link
-					to={`/profile/${post.createdBy.username}`}
+					to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
 					style={{ color: 'inherit' }}
 				>
 					<Typography component="span">

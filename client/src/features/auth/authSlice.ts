@@ -3,8 +3,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type AuthState = {
 	id: string;
+	bio: string;
 	email: string;
 	username: string;
+	firstname: string;
+	lastname: string;
 	profilePic: string;
 	accessToken: string;
 	postsCount: number;
@@ -21,9 +24,12 @@ export type AuthState = {
 
 const initialState: AuthState = {
 	id: '',
+	bio: '',
 	email: '',
 	friends: [],
 	username: '',
+	firstname: '',
+	lastname: '',
 	followers: [],
 	followings: [],
 	profilePic: '',

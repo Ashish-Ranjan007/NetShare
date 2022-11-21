@@ -13,7 +13,10 @@ type NotificationType = {
 type DataType = {
 	userObj: {
 		id: string;
+		bio: string;
 		email: string;
+		firstname: string;
+		lastname: string;
 		username: string;
 		profilePic: string;
 		postsCount: number;

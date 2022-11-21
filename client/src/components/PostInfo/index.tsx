@@ -72,7 +72,7 @@ const PostInfo = () => {
 								: auth.profilePic
 						}
 					/>
-					<Link to={`/profile/${auth.username}`}>
+					<Link to={`/profile/${auth.username}/${auth.id}`}>
 						<Typography
 							variant="body1"
 							color="#4E5D78"

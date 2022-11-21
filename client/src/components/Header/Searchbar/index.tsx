@@ -139,7 +139,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 			);
 		}
 
-		navigate(`/profile/${username}`);
+		navigate(`/profile/${username}/${id}`);
 	};
 
 	// Dropdown also closes on submit

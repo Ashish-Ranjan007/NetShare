@@ -21,7 +21,7 @@ const UserInfo = () => {
 				}}
 			>
 				<Link
-					to={`/profile/${auth.username}`}
+					to={`/profile/${auth.username}/${auth.id}`}
 					style={{
 						textDecoration: 'none',
 						color: '#4E5D78',

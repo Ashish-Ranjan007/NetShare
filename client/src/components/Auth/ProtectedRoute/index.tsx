@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }: Props): JSX.Element => {
 		return children;
 	}
 
-	return <Navigate to="/" />;
+	return <Navigate to={LOGIN} />;
 };
 
 export default ProtectedRoute;

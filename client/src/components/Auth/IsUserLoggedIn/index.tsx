@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../../app/hooks';
-import { FEED } from '../../../constants/routes';
 
 interface Props {
 	children: JSX.Element;

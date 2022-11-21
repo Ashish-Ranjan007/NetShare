@@ -1,6 +1,6 @@
 import { apiSlice } from '../api/apiSlice';
 
-import { ResponseType } from '../../@types/responseType';
+import { ProfileReference, ResponseType } from '../../@types/responseType';
 
 type LoginType = {
 	email: string;
@@ -14,6 +14,20 @@ type RegisterType = {
 	username: string;
 	password: string;
 	confirmPassword: string;
+};
+
+type UserType = {
+	_id: string;
+	bio: string;
+	username: string;
+	firstname: string;
+	lastname: string;
+	profilePic: string;
+	postsCount: number;
+	friendsCount: number;
+	followersCount: number;
+	followingsCount: number;
+	isFollowing: boolean;
 };
 
 const authApiSlice = apiSlice.injectEndpoints({
@@ -47,9 +61,23 @@ const authApiSlice = apiSlice.injectEndpoints({
 				credentials: 'include',
 			}),
 		}),
-		getUserDetails: builder.query<ResponseType, void>({
-			query: () => ({
-				url: '/auth/whoami',
+		getUserDetails: builder.query<
+			{ success: boolean; data: { user: UserType }; error: string },
+			string
+		>({
+			query: (username) => ({
+				url: '/auth/user',
+				params: { username: username },
+			}),
+		}),
+		follow: builder.mutation<
+			{ success: boolean; data: {}; error: string },
+			string
+		>({
+			query: (userId) => ({
+				url: '/auth/follow',
+				method: 'POST',
+				body: { targetId: userId },
 			}),
 		}),
 		unFollow: builder.mutation<
@@ -62,6 +90,40 @@ const authApiSlice = apiSlice.injectEndpoints({
 				body: { targetId: userId },
 			}),
 		}),
+		followers: builder.query<
+			{
+				success: boolean;
+				data: {
+					hasPrev: boolean;
+					hasNext: boolean;
+					followers: ProfileReference[];
+				};
+				error: string;
+			},
+			string
+		>({
+			query: (userId) => ({
+				url: '/auth/followers',
+				params: { userId: userId },
+			}),
+		}),
+		followings: builder.query<
+			{
+				success: boolean;
+				data: {
+					hasPrev: boolean;
+					hasNext: boolean;
+					followings: ProfileReference[];
+				};
+				error: string;
+			},
+			string
+		>({
+			query: (userId) => ({
+				url: '/auth/followings',
+				params: { userId: userId },
+			}),
+		}),
 	}),
 });
 
@@ -69,7 +131,10 @@ export const {
 	useLoginMutation,
 	useLogoutMutation,
 	useRegisterMutation,
-	useGetUserDetailsQuery,
+	useLazyGetUserDetailsQuery,
 	useGetRefreshTokenQuery,
+	useFollowMutation,
 	useUnFollowMutation,
+	useLazyFollowersQuery,
+	useLazyFollowingsQuery,
 } = authApiSlice;

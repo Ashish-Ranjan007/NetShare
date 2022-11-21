@@ -1,6 +1,6 @@
 export const FEED = '/feed';
 export const EXPLORE = '/explore';
-export const PROFILE = '/profile/:username/';
+export const PROFILE = '/profile/:username/:id';
 export const MESSAGES = '/messages';
 export const SETTINGS = '/settings';
 export const NOTIFICATIONS = '/notifications';

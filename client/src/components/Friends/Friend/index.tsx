@@ -15,7 +15,7 @@ const Friend = ({ id, profilePic, username }: ProfileReference) => {
 	return (
 		<ListItem sx={{ padding: '0px' }}>
 			<Link
-				to={`/profile/${username}`}
+				to={`/profile/${username}/${id}`}
 				style={{
 					width: '100%',
 					display: 'block',
