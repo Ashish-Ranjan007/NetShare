@@ -55,22 +55,22 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 				<Box
 					sx={{
 						display: 'flex',
-						flexDirection: { xs: 'column', md: 'row' },
+						flexDirection: { xs: 'column', lg: 'row' },
 					}}
 				>
 					<Box
 						sx={{
 							flex: '1',
 							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
+							alignItems: { xs: 'flex-start', lg: 'center' },
+							justifyContent: { xs: 'flex-start', lg: 'center' },
 						}}
 					>
 						<Avatar
 							sx={{
 								width: '156px',
 								height: '156px',
-								margin: 'auto',
+								margin: { xs: '16px 0px', lg: 'auto' },
 								border: '2px solid #1976d2',
 							}}
 							src={
@@ -82,7 +82,7 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 						/>
 					</Box>
 
-					<Box sx={{ flex: '1' }}>
+					<Box sx={{ flex: '1', marginTop: { xs: '32px', lg: '0' } }}>
 						<Box
 							sx={{
 								display: 'flex',

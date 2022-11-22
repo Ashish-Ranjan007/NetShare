@@ -42,3 +42,21 @@ a.active {
 	);
 	box-shadow: -3px 0px 0px 0px #00a0fa inset;
 }
+
+.my-masonry-grid {
+	display: -webkit-box; /* Not needed if autoprefixing */
+	display: -ms-flexbox; /* Not needed if autoprefixing */
+	display: flex;
+	margin: 0px; /* gutter size offset */
+	width: auto;
+}
+.my-masonry-grid_column {
+	padding: 5px; /* gutter size */
+	background-clip: padding-box;
+}
+
+/* Style your items */
+.my-masonry-grid_column > div {
+	/* change div to reference your elements you put in <Masonry> */
+	margin-bottom: 5px;
+}

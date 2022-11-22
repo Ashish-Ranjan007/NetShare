@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Box, CircularProgress, Grid } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { useAppSelector } from '../../app/hooks';
 import { PostType } from '../../features/post/postApiSlice';
+import Masonry from 'react-masonry-css';
 
 const UserProfilePostList = ({ userId }: { userId: string | undefined }) => {
 	const auth = useAppSelector((state) => state.auth);
@@ -37,6 +38,11 @@ const UserProfilePostList = ({ userId }: { userId: string | undefined }) => {
 		}
 	}, []);
 
+	const breakpoints = {
+		default: 3,
+		600: 2,
+	};
+
 	return (
 		<Box>
 			<InfiniteScroll
@@ -48,33 +54,37 @@ const UserProfilePostList = ({ userId }: { userId: string | undefined }) => {
 						<CircularProgress />
 					</Box>
 				}
-				style={{
-					width: '100%',
-					display: 'flex',
-					flexWrap: 'wrap',
-				}}
 			>
-				{posts.map((post) => {
-					return (
-						<Link to={`/post/${post._id}`} key={post._id}>
+				<Masonry
+					breakpointCols={breakpoints}
+					className="my-masonry-grid"
+					columnClassName="my-masonry-grid_column"
+				>
+					{posts.map((post) => {
+						return (
 							<Box
+								key={post._id}
 								sx={{
-									width: '200px',
-									height: '200px',
-									backgroundImage: `url(${post.contents[0].secure_url})`,
-									backgroundSize: 'cover',
-									backgroundPosition: 'center',
-									backgroundRepeat: 'no-repeat',
-									margin: '5px',
 									':hover': {
 										opacity: '0.8',
 									},
 									transition: 'all 300ms ease',
 								}}
-							/>
-						</Link>
-					);
-				})}
+							>
+								<Link to={`/post/${post._id}`}>
+									<Box
+										component="img"
+										src={post.contents[0].secure_url}
+										sx={{
+											width: '100%',
+											objectFit: 'cover',
+										}}
+									/>
+								</Link>
+							</Box>
+						);
+					})}
+				</Masonry>
 			</InfiniteScroll>
 		</Box>
 	);
