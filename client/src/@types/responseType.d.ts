@@ -4,10 +4,15 @@ export type ProfileReference = {
 	username: string;
 };
 
-type NotificationType = {
+export type NotificationType = {
+	_id: string;
+	time: Date;
 	user: ProfileReference;
-	action: 'like' | 'comment' | 'follow';
-	contentType: 'comment' | 'post' | 'profile';
+	contentId?: string;
+	commentId?: String;
+	replyId?: string;
+	action: 'liked' | 'commented' | 'followed' | 'replied';
+	contentType: 'comment' | 'reply' | 'post' | 'profile';
 };
 
 type DataType = {
@@ -21,12 +26,12 @@ type DataType = {
 		profilePic: string;
 		postsCount: number;
 		friendsCount: number;
+		notifications: number;
 		followersCount: number;
 		followingsCount: number;
 		friends: ProfileReference[];
 		followers: ProfileReference[];
 		followings: ProfileReference[];
-		notifications: NotificationType[];
 		recentSearches: ProfileReference[];
 	};
 };

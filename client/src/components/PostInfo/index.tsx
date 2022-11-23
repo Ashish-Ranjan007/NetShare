@@ -21,8 +21,6 @@ const PostInfo = () => {
 	const [unlikePost] = useUnlikePostMutation();
 	const [open, setOpen] = useState<boolean>(false);
 	const post = useAppSelector((state) => state.post);
-	const auth = useAppSelector((state) => state.auth);
-	const [openAlert, setOpenAlert] = useState<boolean>(false);
 
 	const handleClick = async () => {
 		if (!post.isLiked) {
@@ -41,7 +39,7 @@ const PostInfo = () => {
 	};
 
 	return (
-		<Box>
+		<Box sx={{ marginTop: '24px' }}>
 			<Typography variant="body1">{post.caption}</Typography>
 
 			<Typography variant="body2" sx={{ paddingTop: '24px' }}>
@@ -67,23 +65,25 @@ const PostInfo = () => {
 						}}
 						component="img"
 						src={
-							auth.profilePic === ''
+							post.createdBy.profilePic === ''
 								? defaultProfilePic
-								: auth.profilePic
+								: post.createdBy.profilePic
 						}
 					/>
-					<Link to={`/profile/${auth.username}/${auth.id}`}>
+					<Link
+						to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
+					>
 						<Typography
 							variant="body1"
 							color="#4E5D78"
 							fontWeight="500"
 						>
-							{auth.username}
+							{post.createdBy.username}
 						</Typography>
 					</Link>
 				</Box>
 
-				<Box sx={{ display: 'flex', gap: '16px' }}>
+				<Box sx={{ display: 'flex', gap: { xs: '8px', md: '16px' } }}>
 					<Box
 						sx={{
 							display: 'flex',

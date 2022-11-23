@@ -100,7 +100,6 @@ const Reply = ({
 			});
 		}
 
-		setEditText('');
 		setOpenEdit(false);
 	};
 

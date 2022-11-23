@@ -18,14 +18,14 @@ import {
 import axios from 'axios';
 import { Box } from '@mui/system';
 import { Link } from 'react-router-dom';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import {
 	deleteComment,
 	replyToComment,
 	setLikeComment,
 	updateComment,
-} from '../../features/comments/commentsSlice';
+} from '../../features/post/postSlice';
 import {
 	useDeleteCommentMutation,
 	useLikeCommentMutation,
@@ -122,7 +122,6 @@ const Comment = ({
 			);
 		}
 
-		setEditText('');
 		setOpenEdit(false);
 	};
 
@@ -161,6 +160,12 @@ const Comment = ({
 			dispatch(deleteComment(index));
 		}
 	};
+
+	useEffect(() => {
+		if (replies.length === 0) {
+			fetchMore();
+		}
+	}, [replies]);
 
 	return (
 		<Box

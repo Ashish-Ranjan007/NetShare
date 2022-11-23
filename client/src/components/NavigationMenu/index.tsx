@@ -1,4 +1,5 @@
 import {
+	Badge,
 	Box,
 	List,
 	ListItem,
@@ -20,15 +21,14 @@ import {
 import {
 	CREATE,
 	EXPLORE,
-	FEED,
 	MESSAGES,
 	NOTIFICATIONS,
 	SETTINGS,
 } from '../../constants/routes';
 import { NavLink } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { logout } from '../../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useLogoutMutation } from '../../features/auth/authApiSlice';
 
 type Props = {
@@ -63,7 +63,7 @@ const NavigationMenu = (props: Props) => {
 			link: MESSAGES,
 		},
 		{
-			name: 'Notification',
+			name: 'Notifications',
 			icon: <Notifications />,
 			link: NOTIFICATIONS,
 		},
@@ -119,10 +119,27 @@ const NavigationMenu = (props: Props) => {
 						>
 							<ListItemButton>
 								<ListItemIcon>{nav.icon}</ListItemIcon>
-								<ListItemText
-									primary={nav.name}
-									sx={{ letterSpacing: '0.045rem' }}
-								/>
+								{nav.name === 'Notifications' &&
+								auth.notifications > 0 ? (
+									<Badge
+										badgeContent={auth.notifications}
+										color="primary"
+										anchorOrigin={{
+											vertical: 'top',
+											horizontal: 'right',
+										}}
+									>
+										<ListItemText
+											primary={nav.name}
+											sx={{ letterSpacing: '0.045rem' }}
+										/>
+									</Badge>
+								) : (
+									<ListItemText
+										primary={nav.name}
+										sx={{ letterSpacing: '0.045rem' }}
+									/>
+								)}
 							</ListItemButton>
 						</NavLink>
 					</ListItem>

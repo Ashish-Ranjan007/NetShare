@@ -21,14 +21,12 @@ export type PostType = {
 	}[];
 	caption: string | null;
 	isLiked: boolean;
+	comments: CommentType[];
 };
 
 export type CommentType = {
 	_id: string;
-	commentedOn: {
-		id: string;
-		contentType: 'post' | 'comment';
-	};
+	postId: string;
 	createdBy: ProfileReference;
 	createdAt: Date;
 	likes: number;
@@ -121,4 +119,5 @@ export const {
 	useLikePostMutation,
 	useUnlikePostMutation,
 	useAddCommentMutation,
+	useLazyGetPostByIdQuery,
 } = postsApiSlice;

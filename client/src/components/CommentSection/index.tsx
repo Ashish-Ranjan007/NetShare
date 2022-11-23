@@ -18,7 +18,7 @@ import {
 } from '../../features/post/postApiSlice';
 import { Send } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { addComment, setComments } from '../../features/comments/commentsSlice';
+import { addComment, setComments } from '../../features/post/postSlice';
 
 const defaultProfilePic =
 	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
@@ -31,7 +31,7 @@ const CommentSection = ({ post }: { post: PostType }) => {
 	const [comment, setComment] = useState<string>('');
 	const [hasMore, setHasMore] = useState<boolean>(true);
 	const [openAlert, setOpenAlert] = useState<boolean>(false);
-	const comments = useAppSelector((state) => state.comments);
+	const comments = useAppSelector((state) => state.post.comments);
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -69,7 +69,7 @@ const CommentSection = ({ post }: { post: PostType }) => {
 	}, [comments, post]);
 
 	return (
-		<Box sx={{ padding: '24px' }}>
+		<Box sx={{ padding: { xs: '8px', md: '24px' } }}>
 			<Typography
 				variant="body1"
 				sx={{ paddingBottom: '24px', fontWeight: '500' }}

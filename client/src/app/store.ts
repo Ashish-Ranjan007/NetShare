@@ -4,14 +4,14 @@ import { apiSlice } from '../features/api/apiSlice';
 import authReducer from '../features/auth/authSlice';
 import postReducer from '../features/post/postSlice';
 import feedsReducer from '../features/feeds/feedsSlice';
-import commentsSlice from '../features/comments/commentsSlice';
+import notificationSlice from '../features/notifications/notificationSlice';
 
 export const store = configureStore({
 	reducer: {
 		auth: authReducer,
 		post: postReducer,
 		feeds: feedsReducer,
-		comments: commentsSlice,
+		notifications: notificationSlice,
 		[apiSlice.reducerPath]: apiSlice.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>

@@ -38,15 +38,15 @@ const SinglePostPage = () => {
 			>
 				{post && (
 					<Box>
-						<Box sx={{ padding: '24px' }}>
+						<Box sx={{ paddingX: { xs: '8px', md: '24px' } }}>
 							<Carousel contents={post.contents} />
 						</Box>
 
-						<Box sx={{ paddingX: '24px' }}>
+						<Box sx={{ paddingX: { xs: '8px', md: '24px' } }}>
 							<PostInfo />
 						</Box>
 
-						<CommentSection post={post} />
+						{post._id.length > 0 && <CommentSection post={post} />}
 					</Box>
 				)}
 			</Grid>

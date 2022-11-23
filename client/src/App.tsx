@@ -17,6 +17,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const SinglePostPage = lazy(() => import('./pages/SinglePostPage'));
 const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
+const SingleCommentPage = lazy(() => import('./pages/SingleCommentPage'));
 
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { logout, setCredentials } from './features/auth/authSlice';
@@ -82,6 +83,10 @@ const App: React.FC = () => {
 						<Route path={PROFILE} element={<ProfilePage />} />
 						<Route path={SETTINGS} element={<SettingsPage />} />
 						<Route path={SEARCH} element={<SearchResultsPage />} />
+						<Route
+							path="/comment/:commentId"
+							element={<SingleCommentPage />}
+						/>
 					</Route>
 					<Route
 						path={LOGIN}

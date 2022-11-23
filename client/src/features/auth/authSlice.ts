@@ -1,4 +1,4 @@
-import { ProfileReference, NotificationType } from '../../@types/responseType';
+import { ProfileReference } from '../../@types/responseType';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type AuthState = {
@@ -12,13 +12,13 @@ export type AuthState = {
 	accessToken: string;
 	postsCount: number;
 	friendsCount: number;
+	notifications: number;
 	followersCount: number;
 	followingsCount: number;
 	friends: ProfileReference[];
 	followers: ProfileReference[];
 	followings: ProfileReference[];
 	isAuthenticated: boolean | null;
-	notifications: NotificationType[];
 	recentSearches: ProfileReference[];
 };
 
@@ -37,7 +37,7 @@ const initialState: AuthState = {
 	postsCount: 0,
 	friendsCount: 0,
 	followersCount: 0,
-	notifications: [],
+	notifications: 0,
 	followingsCount: 0,
 	recentSearches: [],
 	isAuthenticated: null,
@@ -56,11 +56,15 @@ export const authSlice = createSlice({
 		setRecentSearches: (state, action: PayloadAction<ProfileReference>) => {
 			state.recentSearches.push(action.payload);
 		},
+		resetNotifications: (state) => {
+			state.notifications = 0;
+		},
 	},
 });
 
 // Export action creators
-export const { setCredentials, logout, setRecentSearches } = authSlice.actions;
+export const { setCredentials, logout, setRecentSearches, resetNotifications } =
+	authSlice.actions;
 
 // Export reducers
 export default authSlice.reducer;
