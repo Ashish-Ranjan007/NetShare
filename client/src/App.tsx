@@ -14,6 +14,7 @@ const ExplorePage = lazy(() => import('./pages/ExplorePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const SinglePostPage = lazy(() => import('./pages/SinglePostPage'));
 const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
@@ -36,6 +37,9 @@ import {
 	CREATE,
 	POST,
 } from './constants/routes';
+import EditProfile from './components/Settings/EditProfile';
+import DeleteAccount from './components/Settings/DeleteAccount';
+import ChangePassword from './components/Settings/ChangePassword';
 
 const App: React.FC = () => {
 	const dispatch = useAppDispatch();
@@ -81,7 +85,17 @@ const App: React.FC = () => {
 						<Route path={POST} element={<SinglePostPage />} />
 						<Route path={FRIENDS} element={<FriendsPage />} />
 						<Route path={PROFILE} element={<ProfilePage />} />
-						<Route path={SETTINGS} element={<SettingsPage />} />
+						<Route path={SETTINGS} element={<SettingsPage />}>
+							<Route index element={<EditProfile />} />
+							<Route
+								path="change-password"
+								element={<ChangePassword />}
+							/>
+							<Route
+								path="delete-account"
+								element={<DeleteAccount />}
+							/>
+						</Route>
 						<Route path={SEARCH} element={<SearchResultsPage />} />
 						<Route
 							path="/comment/:commentId"
@@ -104,6 +118,7 @@ const App: React.FC = () => {
 							</IsUserLoggedIn>
 						}
 					/>
+					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			)}
 		</Suspense>

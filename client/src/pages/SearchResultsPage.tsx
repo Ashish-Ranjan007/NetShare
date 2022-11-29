@@ -21,27 +21,32 @@ const SearchResultsPage = () => {
 	const [profiles, setProfiles] = useState<ProfileReference[]>([]);
 
 	const fetchMore = async () => {
-		const result = await axios.get(
-			'http://localhost:8000/api/auth/search/',
-			{
-				headers: {
-					Authorization: `Bearer ${auth.accessToken}`,
-				},
-				params: {
-					searchTerm: searchTerm,
-					limitToSeven: false,
-					page: page,
-				},
-			}
-		);
+		try {
+			const result = await axios.get(
+				'http://localhost:8000/api/auth/search/',
+				{
+					headers: {
+						Authorization: `Bearer ${auth.accessToken}`,
+					},
+					params: {
+						searchTerm: searchTerm,
+						limitToSeven: false,
+						page: page,
+					},
+				}
+			);
 
-		setProfiles((prev) => [...prev, ...result.data.data.results]);
-		setPage((prev) => prev + 1);
-		setHasMore(result.data.data.results.length > 0 ? true : false);
+			setProfiles((prev) => [...prev, ...result.data.data.results]);
+			setPage((prev) => prev + 1);
+			setHasMore(result.data.data.results.length > 0 ? true : false);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	useEffect(() => {
-		if (profiles.length === 0) {
+		if (profiles.length === 0 && hasMore) {
 			fetchMore();
 		}
 	}, []);

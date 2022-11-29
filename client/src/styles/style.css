@@ -60,3 +60,15 @@ a.active {
 	/* change div to reference your elements you put in <Masonry> */
 	margin-bottom: 5px;
 }
+
+/* react-datepicker */
+.react-datepicker__input-container input {
+	display: block;
+	width: 100%;
+	padding: 10px;
+}
+
+/* textarea */
+textarea#bio::-webkit-scrollbar {
+	width: 0px;
+}

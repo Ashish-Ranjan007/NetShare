@@ -49,21 +49,26 @@ const CommentSection = ({ post }: { post: PostType }) => {
 	};
 
 	const fetchMore = async () => {
-		const result = await axios.get(
-			'http://localhost:8000/api/posts/comments',
-			{
-				headers: { Authorization: `Bearer ${auth.accessToken}` },
-				params: { postId: post._id, page: page },
-			}
-		);
+		try {
+			const result = await axios.get(
+				'http://localhost:8000/api/posts/comments',
+				{
+					headers: { Authorization: `Bearer ${auth.accessToken}` },
+					params: { postId: post._id, page: page },
+				}
+			);
 
-		dispatch(setComments(result.data.data.comments));
-		setPage((prev) => prev + 1);
-		setHasMore(result.data.data.comments.length > 0 ? true : false);
+			dispatch(setComments(result.data.data.comments));
+			setPage((prev) => prev + 1);
+			setHasMore(result.data.data.comments.length > 0 ? true : false);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	useEffect(() => {
-		if (comments.length === 0 && post) {
+		if (comments.length === 0 && post && hasMore) {
 			fetchMore();
 		}
 	}, [comments, post]);

@@ -1,10 +1,6 @@
 import React, { ReactNode } from 'react';
 
-type IProps = {
-	children: ReactNode;
-};
-
-const TextError: React.FC<IProps> = (props: IProps) => {
+const TextError = (props: any) => {
 	return (
 		<div style={{ color: 'red', textAlign: 'center' }}>
 			{props.children}

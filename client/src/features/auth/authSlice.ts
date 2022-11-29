@@ -15,11 +15,13 @@ export type AuthState = {
 	notifications: number;
 	followersCount: number;
 	followingsCount: number;
+	dateOfBirth: Date | null;
 	friends: ProfileReference[];
 	followers: ProfileReference[];
 	followings: ProfileReference[];
 	isAuthenticated: boolean | null;
 	recentSearches: ProfileReference[];
+	gender: 'Male' | 'Female' | 'Others' | null;
 };
 
 const initialState: AuthState = {
@@ -30,6 +32,7 @@ const initialState: AuthState = {
 	username: '',
 	firstname: '',
 	lastname: '',
+	gender: null,
 	followers: [],
 	followings: [],
 	profilePic: '',
@@ -37,6 +40,7 @@ const initialState: AuthState = {
 	postsCount: 0,
 	friendsCount: 0,
 	followersCount: 0,
+	dateOfBirth: null,
 	notifications: 0,
 	followingsCount: 0,
 	recentSearches: [],

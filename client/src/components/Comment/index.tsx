@@ -74,17 +74,22 @@ const Comment = ({
 	const [openConfirmation, setOpenConfirmation] = useState<boolean>(false);
 
 	const fetchMore = async () => {
-		const result = await axios.get<ReplyResponseType>(
-			'http://localhost:8000/api/comments/replies',
-			{
-				headers: { Authorization: `Bearer ${auth.accessToken}` },
-				params: { commentId: comment._id, page: page },
-			}
-		);
+		try {
+			const result = await axios.get<ReplyResponseType>(
+				'http://localhost:8000/api/comments/replies',
+				{
+					headers: { Authorization: `Bearer ${auth.accessToken}` },
+					params: { commentId: comment._id, page: page },
+				}
+			);
 
-		setReplies((prev) => prev.concat(result.data.data.replies));
-		setPage((prev) => prev + 1);
-		setHasMore(result.data.data.hasNext);
+			setReplies((prev) => prev.concat(result.data.data.replies));
+			setPage((prev) => prev + 1);
+			setHasMore(result.data.data.hasNext);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	const handleLike = async () => {
@@ -162,7 +167,7 @@ const Comment = ({
 	};
 
 	useEffect(() => {
-		if (replies.length === 0) {
+		if (replies.length === 0 && hasMore) {
 			fetchMore();
 		}
 	}, [replies]);

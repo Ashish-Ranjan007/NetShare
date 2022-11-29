@@ -18,25 +18,30 @@ const FeedSection = () => {
 	const [hasMore, setHasMore] = useState<boolean>(true);
 
 	const fetchMore = async () => {
-		const result = await axios.get(
-			'http://localhost:8000/api/home/feeds/',
-			{
-				headers: {
-					Authorization: `Bearer ${auth.accessToken}`,
-				},
-				params: {
-					page: page,
-				},
-			}
-		);
+		try {
+			const result = await axios.get(
+				'http://localhost:8000/api/home/feeds/',
+				{
+					headers: {
+						Authorization: `Bearer ${auth.accessToken}`,
+					},
+					params: {
+						page: page,
+					},
+				}
+			);
 
-		dispatch(setFeeds(result.data.data.posts));
-		setHasMore(result.data.data.hasNext);
-		setPage((prev) => prev + 1);
+			dispatch(setFeeds(result.data.data.posts));
+			setHasMore(result.data.data.hasNext);
+			setPage((prev) => prev + 1);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	useEffect(() => {
-		if (feeds.length === 0) {
+		if (feeds.length === 0 && hasMore) {
 			fetchMore();
 		}
 	}, []);

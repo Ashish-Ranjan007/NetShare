@@ -20,7 +20,7 @@ const SinglePostPage = () => {
 		if (isSuccess) {
 			dispatch(setPost({ ...data.data.post }));
 		}
-	}, [data, isSuccess]);
+	}, [isSuccess]);
 
 	return (
 		<Grid container spacing={2}>

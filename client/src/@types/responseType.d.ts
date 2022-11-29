@@ -29,10 +29,12 @@ type DataType = {
 		notifications: number;
 		followersCount: number;
 		followingsCount: number;
+		dateOfBirth: Date | null;
 		friends: ProfileReference[];
 		followers: ProfileReference[];
 		followings: ProfileReference[];
 		recentSearches: ProfileReference[];
+		gender: 'Male' | 'Female' | 'Others' | null;
 	};
 };
 

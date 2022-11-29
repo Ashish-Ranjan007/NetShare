@@ -18,22 +18,27 @@ const ExplorePage = () => {
 	const [hasMore, setHasMore] = useState<boolean>(true);
 
 	const fetchMore = async () => {
-		const result = await axios.get<{
-			success: boolean;
-			data: { hasPrev: boolean; hasNext: boolean; posts: PostType[] };
-			error: string;
-		}>('http://localhost:8000/api/posts/explore', {
-			headers: { Authorization: `Bearer ${auth.accessToken}` },
-			params: { page: page },
-		});
+		try {
+			const result = await axios.get<{
+				success: boolean;
+				data: { hasPrev: boolean; hasNext: boolean; posts: PostType[] };
+				error: string;
+			}>('http://localhost:8000/api/posts/explore', {
+				headers: { Authorization: `Bearer ${auth.accessToken}` },
+				params: { page: page },
+			});
 
-		setPosts((prev) => [...prev, ...result.data.data.posts]);
-		setHasMore(result.data.data.hasNext);
-		setPage((prev) => prev + 1);
+			setPosts((prev) => [...prev, ...result.data.data.posts]);
+			setHasMore(result.data.data.hasNext);
+			setPage((prev) => prev + 1);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	useEffect(() => {
-		if (posts.length === 0) {
+		if (posts.length === 0 && hasMore) {
 			fetchMore();
 		}
 	}, []);

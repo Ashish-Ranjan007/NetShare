@@ -23,22 +23,27 @@ const NotificationPage = () => {
 	const notifications = useAppSelector((state) => state.notifications);
 
 	const fetchMore = async () => {
-		const result = await axios.get<{
-			success: boolean;
-			data: {
-				hasPrev: boolean;
-				hasNext: boolean;
-				notifications: NotificationType[];
-			};
-			error: string;
-		}>('http://localhost:8000/api/notifications', {
-			headers: { Authorization: `Bearer ${auth.accessToken}` },
-			params: { page: page },
-		});
+		try {
+			const result = await axios.get<{
+				success: boolean;
+				data: {
+					hasPrev: boolean;
+					hasNext: boolean;
+					notifications: NotificationType[];
+				};
+				error: string;
+			}>('http://localhost:8000/api/notifications', {
+				headers: { Authorization: `Bearer ${auth.accessToken}` },
+				params: { page: page },
+			});
 
-		dispatch(setNotificaitons(result.data.data.notifications));
-		setHasMore(result.data.data.hasNext);
-		setPage((prev) => prev + 1);
+			dispatch(setNotificaitons(result.data.data.notifications));
+			setHasMore(result.data.data.hasNext);
+			setPage((prev) => prev + 1);
+		} catch (error) {
+			console.log(error);
+			setHasMore(false);
+		}
 	};
 
 	useEffect(() => {
