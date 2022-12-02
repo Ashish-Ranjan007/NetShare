@@ -30,7 +30,13 @@ const SettingsPage = () => {
 					}}
 				>
 					<Typography
-						sx={{ padding: { xs: '10px 0px', md: '0px 16px' } }}
+						sx={{
+							padding: {
+								xs: '10px 0px',
+								md: '0px 16px',
+								color: active === 'profile' ? 'red' : '',
+							},
+						}}
 					>
 						Profile
 					</Typography>
@@ -45,7 +51,13 @@ const SettingsPage = () => {
 					}}
 				>
 					<Typography
-						sx={{ padding: { xs: '10px 0px', md: '0px 16px' } }}
+						sx={{
+							padding: {
+								xs: '10px 0px',
+								md: '0px 16px',
+								color: active === 'password' ? 'red' : '',
+							},
+						}}
 					>
 						Change Password
 					</Typography>
@@ -60,7 +72,13 @@ const SettingsPage = () => {
 					}}
 				>
 					<Typography
-						sx={{ padding: { xs: '10px 0px', md: '0px 16px' } }}
+						sx={{
+							padding: {
+								xs: '10px 0px',
+								md: '0px 16px',
+								color: active === 'account' ? 'red' : '',
+							},
+						}}
 					>
 						Delete Account
 					</Typography>
