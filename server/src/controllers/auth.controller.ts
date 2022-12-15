@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { User, UserModel, UserSchema } from '../models/User';
+import { User } from '../models/User.model';
 import { verifyJWT } from '../utils/verifyJWT';
 import { sendToken } from '../utils/sendToken';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
-import { Error } from 'mongoose';
 
 // Register a new user
 export const register = catchAsyncErrors(
@@ -105,12 +104,22 @@ export const refreshToken = catchAsyncErrors(
 				{
 					userObj: {
 						id: user._id.toString(),
+						bio: user.bio,
 						email: user.email,
+						gender: user.gender,
 						friends: user.friends,
 						username: user.username,
+						firstname: user.firstname,
+						lastname: user.lastname,
+						dateOfBirth: user.dateOfBirth,
 						profilePic: user.profilePic,
+						postsCount: user.postsCount,
+						friendsCount: user.friendsCount,
+						followersCount: user.followersCount,
+						followingsCount: user.followingsCount,
 						followers: user.followers.slice(0, 10),
 						followings: user.followings.slice(0, 10),
+						notifications: user.notificationCount,
 						recentSearches: user.recentSearches.slice(0, 10),
 					},
 				},
@@ -124,12 +133,39 @@ export const refreshToken = catchAsyncErrors(
 // Get user details
 export const getUserDetails = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
+		const { username } = req.query;
+
+		if (!username) {
+			return next(new ErrorHandler('No userid is provided', 400));
+		}
+
+		const userObj = await User.find(
+			{ username: username },
+			{
+				email: 0,
+				friends: 0,
+				followings: 0,
+				recentSearches: 0,
+				notifications: 0,
+				notificationHistory: 0,
+			}
+		).lean();
+
+		if (userObj.length === 0) {
+			return next(new ErrorHandler('User does not exist.', 400));
+		}
+
+		const isFollowing = userObj[0].followers.find(
+			(follower) => follower.id === req.user._id.toString()
+		)
+			? true
+			: false;
+
+		userObj[0].followers = [];
+
 		res.status(200).json(
 			new ResponseData(true, {
-				userObj: {
-					email: req.user.email,
-					username: req.user.username,
-				},
+				user: { ...userObj[0], isFollowing },
 			})
 		);
 	}
@@ -145,6 +181,8 @@ export const getSearchUsers = catchAsyncErrors(
 			return next(new ErrorHandler('Search term not provided', 400));
 		}
 
+		const page = parseInt(req.query.page as string) || 0;
+
 		// Get all users that have the provided searchTerm in their username, firstname or lastname except the current user
 		const users = await User.find({
 			$and: [
@@ -159,6 +197,7 @@ export const getSearchUsers = catchAsyncErrors(
 			],
 		})
 			.select('_id profilePic username')
+			.skip(page * 20)
 			.limit(limitToSeven);
 
 		res.status(200).json(
@@ -243,6 +282,9 @@ export const follow = catchAsyncErrors(
 			profilePic: target.profilePic,
 		});
 
+		// increase followingsCount of user
+		user.followingsCount += 1;
+
 		// If target already follows user make them friends
 		for (let i = 0; i < user.followers.length; i++) {
 			if (user.followers[i].id === target._id.toString()) {
@@ -251,11 +293,18 @@ export const follow = catchAsyncErrors(
 					username: target.username,
 					profilePic: target.profilePic,
 				});
+
+				// increase friendsCount of user
+				user.friendsCount += 1;
+
 				target.friends.push({
 					id: user._id.toString(),
 					username: user.username,
 					profilePic: user.profilePic,
 				});
+
+				// increase friendsCount of target
+				target.friendsCount += 1;
 
 				break;
 			}
@@ -270,6 +319,22 @@ export const follow = catchAsyncErrors(
 			username: user.username,
 			profilePic: user.profilePic,
 		});
+
+		// notify target
+		target.notifications.push({
+			user: {
+				id: req.user._id.toString(),
+				username: req.user.username,
+				profilePic: req.user.profilePic,
+			},
+			action: 'followed',
+			contentType: 'profile',
+			time: new Date(),
+		});
+		target.notificationCount++;
+
+		// increase followersCount of user
+		target.followersCount += 1;
 
 		// Update target
 		await target.save();
@@ -307,23 +372,47 @@ export const unFollow = catchAsyncErrors(
 		// Update user's followings array
 		user.followings = newFollowingsArray;
 
+		// decrease followingsCount of user
+		user.followingsCount -= 1;
+
 		// Remove target from user's friends array if present
-		user.friends = user.friends.filter(
-			(friend) => friend.id !== target._id.toString()
-		);
+		user.friends = user.friends.filter((friend) => {
+			if (friend.id === target._id.toString()) {
+				// decrease friendsCount of uset
+				user.friendsCount -= 1;
+
+				return false;
+			}
+
+			return true;
+		});
 
 		// Update user
 		await user.save();
 
 		// Remove user from target user's followers array
-		target.followers = target.followers.filter(
-			(follower) => follower.id !== user._id.toString()
-		);
+		target.followers = target.followers.filter((follower) => {
+			if (follower.id === user._id.toString()) {
+				// decrease followersCount of target
+				target.followersCount -= 1;
+
+				return false;
+			}
+
+			return true;
+		});
 
 		// Remove user from target's friends array if present
-		target.friends = target.friends.filter(
-			(friend) => friend.id !== user._id.toString()
-		);
+		target.friends = target.friends.filter((friend) => {
+			if (friend.id === user._id.toString()) {
+				// decrease friendsCount of target
+				target.friendsCount -= 1;
+
+				return false;
+			}
+
+			return true;
+		});
 
 		// Update target
 		await target.save();
@@ -335,70 +424,64 @@ export const unFollow = catchAsyncErrors(
 // Get Followers
 export const getFollowers = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { searchTerm } = req.query;
+		const { userId } = req.query;
 
-		if (!searchTerm || searchTerm.length === 0) {
-			const followers = await User.findById(req.user._id).select(
-				'followers'
-			);
+		const user = await User.findById(userId);
 
-			return res
-				.status(200)
-				.json(
-					new ResponseData(true, { results: followers?.followers })
-				);
+		if (!user) {
+			return next(new ErrorHandler('Resource not found', 404));
 		}
 
-		const followers = await User.find({
-			_id: req.user._id,
-		}).then((doc) => {
-			return doc[0].followers.filter((follower) => {
-				const re = new RegExp(searchTerm.toString(), 'i');
+		const followersPerPage = 20;
+		const page = parseInt(req.query.page as string) || 0;
+		const totalFollowers = user.followersCount;
 
-				if (follower.username.match(re)) {
-					return true;
-				} else {
-					false;
-				}
-			});
-		});
+		const hasPrev = page === 0 ? false : true;
+		const hasNext =
+			totalFollowers - (page * followersPerPage + followersPerPage) > 0
+				? true
+				: false;
 
-		res.status(200).json(new ResponseData(true, { results: followers }));
+		const followers = user.followers.splice(
+			page * followersPerPage,
+			followersPerPage
+		);
+
+		res.status(200).json(
+			new ResponseData(true, { hasPrev, hasNext, followers })
+		);
 	}
 );
 
 // Get Followings
 export const getFollowings = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { searchTerm } = req.query;
+		const { userId } = req.query;
 
-		if (!searchTerm || searchTerm.length === 0) {
-			const followings = await User.findById(req.user._id).select(
-				'followings'
-			);
+		const user = await User.findById(userId);
 
-			return res
-				.status(200)
-				.json(
-					new ResponseData(true, { results: followings?.followings })
-				);
+		if (!user) {
+			return next(new ErrorHandler('Resource not found', 404));
 		}
 
-		const followings = await User.find({
-			_id: req.user._id,
-		}).then((doc) => {
-			return doc[0].followings.filter((following) => {
-				const re = new RegExp(searchTerm.toString(), 'i');
+		const followingsPerPage = 20;
+		const page = parseInt(req.query.page as string) || 0;
+		const totalFollowings = user.followingsCount;
 
-				if (following.username.match(re)) {
-					return true;
-				} else {
-					false;
-				}
-			});
-		});
+		const hasPrev = page === 0 ? false : true;
+		const hasNext =
+			totalFollowings - (page * followingsPerPage + followingsPerPage) > 0
+				? true
+				: false;
 
-		res.status(200).json(new ResponseData(true, { results: followings }));
+		const followings = user.followings.splice(
+			page * followingsPerPage,
+			followingsPerPage
+		);
+
+		res.status(200).json(
+			new ResponseData(true, { hasPrev, hasNext, followings })
+		);
 	}
 );
 

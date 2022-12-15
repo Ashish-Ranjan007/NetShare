@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { User } from '../../../models/User';
+import { User } from '../../../models/User.model';
 import * as VerifyJWT from '../../../utils/verifyJWT';
 import { ErrorHandler } from '../../../utils/ErrorHandler';
 import { isAuthenticated } from '../../../middlewares/isAuthenticated';
 
 // Mocks
-jest.mock('../../../models/User');
 jest.mock('../../../utils/verifyJWT');
+jest.mock('../../../models/User.model');
 
 const mockRequest = {
 	headers: {

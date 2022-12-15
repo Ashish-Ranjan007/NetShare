@@ -1,5 +1,5 @@
 import express from 'express';
-import { getFeeds } from '../controllers/feeds';
+import { getFeeds } from '../controllers/feeds.controller';
 
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 

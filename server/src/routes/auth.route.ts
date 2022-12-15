@@ -13,7 +13,7 @@ import {
 	getFollowers,
 	getFollowings,
 	getFriends,
-} from '../controllers/auth';
+} from '../controllers/auth.controller';
 import { loginSchema } from '../validationSchema/loginValidator';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { registrationSchema } from '../validationSchema/registrationSchema';
@@ -31,7 +31,7 @@ authRoute.post(
 authRoute.post('/login', loginSchema, validateRequestSchema, login);
 authRoute.post('/logout', [isAuthenticated], logout);
 authRoute.get('/refresh-token', refreshToken);
-authRoute.get('/whoami', [isAuthenticated], getUserDetails);
+authRoute.get('/user', [isAuthenticated], getUserDetails);
 authRoute.get('/search', [isAuthenticated], getSearchUsers);
 authRoute.post('/add-recent-search', [isAuthenticated], postAddRecentSearch);
 authRoute.post('/follow', [isAuthenticated], follow);

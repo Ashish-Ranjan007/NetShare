@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { User } from '../models/User';
+import { User } from '../models/User.model';
 import { verifyJWT } from '../utils/verifyJWT';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { catchAsyncErrors } from './catchAsyncErrors';
@@ -34,7 +34,10 @@ export const isAuthenticated = catchAsyncErrors(
 			);
 		}
 
-		const user = await User.findById(payload._id, '_id email username');
+		const user = await User.findById(
+			payload._id,
+			'_id email username profilePic'
+		);
 
 		if (!user) {
 			return next(

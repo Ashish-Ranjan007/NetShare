@@ -1,5 +1,11 @@
 import * as dotenv from 'dotenv';
 
+// Enviroment variable config
+if (process.env.NODE_ENV !== 'PRODUCTION') {
+	// This is only required in development as environment variables will be set on server during production
+	dotenv.config();
+}
+
 import { app } from './app';
 import { connectDatabase } from './database/database';
 
@@ -9,12 +15,6 @@ process.on('uncaughtException', (err) => {
 	console.log(`Shutting down the server due to Uncaught Exception`);
 	process.exit(1);
 });
-
-// Enviroment variable config
-if (process.env.NODE_ENV !== 'PRODUCTION') {
-	// This is only required in development as environment variables will be set on server during production
-	dotenv.config();
-}
 
 // Connect to Database
 connectDatabase();

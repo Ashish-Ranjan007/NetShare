@@ -1,6 +1,6 @@
-import { NextFunction, Request, response, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
-import { User } from '../../../models/User';
+import { User } from '../../../models/User.model';
 import { sendToken } from '../../../utils/sendToken';
 import * as VerifyJWT from '../../../utils/verifyJWT';
 import { ErrorHandler } from '../../../utils/ErrorHandler';
@@ -15,13 +15,12 @@ import {
 	refreshToken,
 	register,
 	unFollow,
-} from '../../../controllers/auth';
-import { ResponseData } from '../../../utils/ResponseData';
+} from '../../../controllers/auth.controller';
 
 // Mocks
-jest.mock('../../../models/User');
 jest.mock('../../../utils/sendToken');
 jest.mock('../../../utils/verifyJWT');
+jest.mock('../../../models/User.model');
 
 const mockRequest = {
 	body: {
@@ -206,7 +205,9 @@ describe('Search Users', () => {
 
 		User.find = jest.fn().mockImplementationOnce(() => ({
 			select: jest.fn().mockImplementationOnce(() => ({
-				limit: jest.fn().mockResolvedValueOnce([]),
+				skip: jest.fn().mockImplementationOnce(() => ({
+					limit: jest.fn().mockResolvedValueOnce([]),
+				})),
 			})),
 		}));
 
@@ -358,19 +359,27 @@ describe('Follow', () => {
 				friends: [],
 				followings: [
 					{
-						_id: 'id',
+						id: 'id',
 						username: 'username',
 						profilePic: '',
 					},
 				],
+				username: 'user',
+				profilePic: 'profilePic',
 				followers: [],
+				friendsCount: 0,
+				followingsCount: 0,
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
 				_id: '_id',
 				friends: [],
+				frinedsCount: 0,
 				username: 'username123',
 				profilePic: 'profilePic123',
+				notifications: [],
+				followersCount: 0,
+				notificationCount: 0,
 				followers: [],
 				save: jest.fn(),
 			});
@@ -461,14 +470,15 @@ describe('UnFollow', () => {
 
 describe('getFollowers', () => {
 	it('should return random followers if no searchTerm exists in query', async () => {
-		mockRequest.query = {};
+		mockRequest.query = { userId: 'userId' };
 		const newMockResponse: any = {
 			status: jest.fn(),
 			json: jest.fn(),
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockResolvedValueOnce({ followers: [] }),
+			followers: [],
+			followersCount: 0,
 		}));
 
 		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
@@ -480,10 +490,11 @@ describe('getFollowers', () => {
 		const newMockResponse: any = {
 			status: jest.fn(),
 		};
-		mockRequest.query = { searchTerm: 'username' };
+		mockRequest.query = { userId: 'username' };
 
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: jest.fn().mockResolvedValueOnce([]),
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			followers: [],
+			followersCount: 0,
 		}));
 
 		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
@@ -494,13 +505,14 @@ describe('getFollowers', () => {
 
 describe('getFollowings', () => {
 	it('should return random followings if no searchTerm exists in query', async () => {
-		mockRequest.query = {};
+		mockRequest.query = { userId: 'userId' };
 		const newMockResponse: any = {
 			status: jest.fn(),
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockResolvedValueOnce({ followings: [] }),
+			followings: [],
+			followingsCount: 0,
 		}));
 
 		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
@@ -512,10 +524,11 @@ describe('getFollowings', () => {
 		const newMockResponse: any = {
 			status: jest.fn(),
 		};
-		mockRequest.query = { searchTerm: 'username' };
+		mockRequest.query = { userId: 'userId' };
 
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: jest.fn().mockResolvedValueOnce([]),
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			followings: [],
+			followingsCount: 0,
 		}));
 
 		await getFollowings(mockRequest, newMockResponse as Response, mockNext);

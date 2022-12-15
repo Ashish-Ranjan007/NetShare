@@ -4,8 +4,18 @@ import { Model, Schema, model } from 'mongoose';
 
 type ProfileReference = {
 	id: string;
-	profilePic: string;
 	username: string;
+	profilePic: string;
+};
+
+type NotificationType = {
+	time: Date;
+	user: ProfileReference;
+	contentId?: string;
+	commentId?: String;
+	replyId?: string;
+	action: 'liked' | 'commented' | 'followed' | 'replied';
+	contentType: 'comment' | 'reply' | 'post' | 'profile';
 };
 
 // Document Interface
@@ -14,13 +24,23 @@ export interface IUser {
 	lastname: string;
 	username: string;
 	email: string;
+	bio: string;
 	password: string;
 	refreshToken: string;
 	profilePic: string;
+	postsCount: number;
+	friendsCount: number;
+	followersCount: number;
+	followingsCount: number;
+	dateOfBirth: Date | null;
+	notificationCount: number;
 	friends: ProfileReference[];
 	followers: ProfileReference[];
 	followings: ProfileReference[];
 	recentSearches: ProfileReference[];
+	notifications: NotificationType[];
+	notificationHistory: NotificationType[];
+	gender: 'Male' | 'Female' | 'Others' | null;
 }
 
 export interface IUserMethods {
@@ -54,6 +74,10 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 			'Please provide a valid email',
 		],
 	},
+	bio: {
+		type: String,
+		default: '',
+	},
 	password: {
 		type: String,
 		required: [true, 'Please enter your password '],
@@ -68,6 +92,22 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	profilePic: {
 		type: String,
 		default: '',
+	},
+	postsCount: {
+		type: Number,
+		default: 0,
+	},
+	friendsCount: {
+		type: Number,
+		default: 0,
+	},
+	followersCount: {
+		type: Number,
+		default: 0,
+	},
+	followingsCount: {
+		type: Number,
+		default: 0,
 	},
 	friends: {
 		type: [{ id: String, profilePic: String, username: String }],
@@ -84,6 +124,51 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 	followings: {
 		type: [{ id: String, profilePic: String, username: String }],
 		default: [],
+	},
+	notificationCount: {
+		type: Number,
+		default: 0,
+	},
+	notifications: {
+		type: [
+			{
+				time: Date,
+				user: {
+					id: String,
+					profilePic: String,
+					username: String,
+				},
+				postId: String,
+				commentId: String,
+				replyId: String,
+				contentId: String,
+				action: String,
+				contentType: String,
+			},
+		],
+		default: [],
+	},
+	notificationHistory: {
+		type: [
+			{
+				user: {
+					id: String,
+					profilePic: String,
+					username: String,
+				},
+				action: String,
+				contentType: String,
+			},
+		],
+		default: [],
+	},
+	dateOfBirth: {
+		type: Date,
+		default: null,
+	},
+	gender: {
+		type: String,
+		default: null,
 	},
 });
 

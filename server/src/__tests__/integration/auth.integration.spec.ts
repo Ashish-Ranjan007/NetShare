@@ -1,14 +1,14 @@
 import request from 'supertest';
 
 import { app } from '../../app';
-import { User } from '../../models/User';
+import { User } from '../../models/User.model';
 import * as VerifyToken from '../../utils/verifyJWT';
 import * as SendJWTTokens from '../../utils/sendToken';
 
 // Mocks
-jest.mock('../../models/User');
 jest.mock('../../utils/verifyJWT');
 jest.mock('../../utils/sendToken');
+jest.mock('../../models/User.model');
 
 // Setup to Authenticate request of every test
 beforeEach(() => {
@@ -232,10 +232,15 @@ describe('Integration tests for the refresh-token route', () => {
 			email: 'email',
 			username: 'username',
 			profilePic: 'profilePic',
+			postsCount: 0,
+			friendsCount: 0,
+			followersCount: 0,
+			followingsCount: 0,
 			friends: [],
 			followers: [],
 			followings: [],
 			recentSearches: [],
+			notificationCount: 0,
 			getSignedToken: jest.fn().mockImplementationOnce(() => {
 				return 'accessToken';
 			}),
@@ -259,9 +264,14 @@ describe('Integration tests for the refresh-token route', () => {
 					email: 'email',
 					username: 'username',
 					profilePic: 'profilePic',
+					postsCount: 0,
+					friendsCount: 0,
+					followersCount: 0,
+					followingsCount: 0,
 					friends: [],
 					followers: [],
 					followings: [],
+					notifications: 0,
 					recentSearches: [],
 				},
 			},
@@ -316,18 +326,30 @@ describe('Integration tests for the refresh-token route', () => {
 });
 
 describe('Integration tests for the whoami route', () => {
-	it('GET /api/auth/whoami - success - send user details', async () => {
+	it('GET /api/auth/user - success - send user details', async () => {
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			_id: 'userid',
+			profilePic: 'profilePic',
+			username: 'username',
+			recentSearches: [{ id: 'userId' }],
+			save: jest.fn(),
+		}));
+
+		User.find = jest.fn().mockImplementationOnce(() => ({
+			lean: jest.fn().mockResolvedValueOnce([{ followers: [] }]),
+		}));
+
 		const response = await request(app)
-			.get('/api/auth/whoami')
+			.get('/api/auth/user/?username=username')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
 			data: {
-				userObj: {
-					email: 'email',
-					username: 'username',
+				user: {
+					followers: [],
+					isFollowing: false,
 				},
 			},
 			error: '',
@@ -339,13 +361,15 @@ describe('Integration tests for search route', () => {
 	it('GET /api/auth/search/?searchTerm=username - success - send matched users', async () => {
 		User.find = jest.fn().mockImplementationOnce(() => ({
 			select: jest.fn().mockImplementationOnce(() => ({
-				limit: jest.fn().mockResolvedValueOnce([
-					{
-						_id: '_id',
-						profilePic: 'profilePic',
-						username: 'username',
-					},
-				]),
+				skip: jest.fn().mockImplementationOnce(() => ({
+					limit: jest.fn().mockResolvedValueOnce([
+						{
+							_id: '_id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					]),
+				})),
 			})),
 		}));
 
@@ -454,8 +478,7 @@ describe('Integration tests for follow route', () => {
 			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
 				_id: 'userid',
-				username: 'username1234',
-				profilePic: 'profilePic1234',
+				friends: [],
 				followings: [
 					{
 						id: 'id',
@@ -463,13 +486,22 @@ describe('Integration tests for follow route', () => {
 						profilePic: '',
 					},
 				],
+				username: 'user',
+				profilePic: 'profilePic',
 				followers: [],
+				friendsCount: 0,
+				followingsCount: 0,
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
 				_id: '_id',
+				friends: [],
+				frinedsCount: 0,
 				username: 'username123',
 				profilePic: 'profilePic123',
+				notifications: [],
+				followersCount: 0,
+				notificationCount: 0,
 				followers: [],
 				save: jest.fn(),
 			});
@@ -653,26 +685,27 @@ describe('Integration tests for getFollowers route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: () => ({
-					followers: [
-						{
-							id: 'id',
-							profilePic: 'profilePic',
-							username: 'username',
-						},
-					],
-				}),
+				followers: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+				followersCount: 0,
 			}));
 
 		const response = await request(app)
-			.get('/api/auth/followers')
+			.get('/api/auth/followers/?userId=userId')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
 			data: {
-				results: [
+				hasPrev: false,
+				hasNext: false,
+				followers: [
 					{
 						id: 'id',
 						profilePic: 'profilePic',
@@ -685,25 +718,31 @@ describe('Integration tests for getFollowers route', () => {
 	});
 
 	it('POST /api/auth/followers - success - if searchTerm exists return followers that match searchTerm', async () => {
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: () => [
-				{
-					id: 'id',
-					profilePic: 'profilePic',
-					username: 'username',
-				},
-			],
-		}));
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				followers: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+				followersCount: 0,
+			}));
 
 		const response = await request(app)
-			.get('/api/auth/followers/?searchTerm=username123')
+			.get('/api/auth/followers/?userId=userId')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
 			data: {
-				results: [
+				hasPrev: false,
+				hasNext: false,
+				followers: [
 					{
 						id: 'id',
 						profilePic: 'profilePic',
@@ -722,26 +761,26 @@ describe('Integration tests for getFollowings route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: () => ({
-					followings: [
-						{
-							id: 'id',
-							profilePic: 'profilePic',
-							username: 'username',
-						},
-					],
-				}),
+				followings: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
 			}));
 
 		const response = await request(app)
-			.get('/api/auth/followings')
+			.get('/api/auth/followings/?userId=userId')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
 			data: {
-				results: [
+				hasPrev: false,
+				hasNext: false,
+				followings: [
 					{
 						id: 'id',
 						profilePic: 'profilePic',
@@ -754,25 +793,30 @@ describe('Integration tests for getFollowings route', () => {
 	});
 
 	it('POST /api/auth/followings - success - if searchTerm exists return followings that match searchTerm', async () => {
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: () => [
-				{
-					id: 'id',
-					profilePic: 'profilePic',
-					username: 'username',
-				},
-			],
-		}));
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				followings: [
+					{
+						id: 'id',
+						profilePic: 'profilePic',
+						username: 'username',
+					},
+				],
+			}));
 
 		const response = await request(app)
-			.get('/api/auth/followings/?searchTerm=username123')
+			.get('/api/auth/followings/?userId=userId')
 			.set('Authorization', 'Bearer token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
 			data: {
-				results: [
+				hasPrev: false,
+				hasNext: false,
+				followings: [
 					{
 						id: 'id',
 						profilePic: 'profilePic',
