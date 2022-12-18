@@ -4,6 +4,7 @@ import { apiSlice } from '../features/api/apiSlice';
 import authReducer from '../features/auth/authSlice';
 import postReducer from '../features/post/postSlice';
 import feedsReducer from '../features/feeds/feedsSlice';
+import widgetsSlice from '../features/widgets/widgetsSlice';
 import notificationSlice from '../features/notifications/notificationSlice';
 
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
 		auth: authReducer,
 		post: postReducer,
 		feeds: feedsReducer,
+		widgets: widgetsSlice,
 		notifications: notificationSlice,
 		[apiSlice.reducerPath]: apiSlice.reducer,
 	},

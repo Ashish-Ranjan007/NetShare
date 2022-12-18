@@ -27,6 +27,16 @@ export const feedsSlice = createSlice({
 	initialState,
 	reducers: {
 		setFeeds: (state, action: PayloadAction<FeedType[]>) => {
+			action.payload = action.payload.filter((newPost) => {
+				for (let i = 0; i < state.length; i++) {
+					if (state[i]._id === newPost._id) {
+						return false;
+					}
+				}
+
+				return true;
+			});
+
 			return state.concat(action.payload);
 		},
 		likePost: (state, action: PayloadAction<number>) => {

@@ -213,7 +213,11 @@ const EditProfile = () => {
 								<Button
 									variant="contained"
 									type="submit"
-									disabled={formik.isSubmitting}
+									disabled={
+										formik.isSubmitting ||
+										!formik.dirty ||
+										!formik.isValid
+									}
 									sx={{
 										width: '100px',
 										alignSelf: 'flex-end',
