@@ -83,7 +83,7 @@ describe('Integration test for birthdays route', () => {
 				],
 			})
 			.mockResolvedValueOnce({
-				id: 'friendId',
+				_id: 'friendId',
 				username: 'friend',
 				profilePic: 'profilePic',
 				dateOfBirth: new Date().toISOString(),

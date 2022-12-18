@@ -61,7 +61,7 @@ export const getBirthdays = catchAsyncErrors(
 				date.getMonth() === dateOfBirth.getMonth()
 			) {
 				friends.push({
-					id: friend.id,
+					id: friend._id.toString(),
 					username: friend.username,
 					profilePic: friend.profilePic,
 				});
