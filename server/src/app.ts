@@ -12,6 +12,8 @@ import { commentsRoute } from './routes/comments.route';
 import { notificationsRoute } from './routes/notifications.route';
 import { settingsRoute } from './routes/settings.route';
 import { widgetRoute } from './routes/widgets.route';
+import { chatRoutes } from './routes/chat.route';
+import { messageRoute } from './routes/messages.route';
 
 // Initialize express
 const app = express();
@@ -27,7 +29,9 @@ app.use('/api/home', homeRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/posts', postsRoute);
 app.use('/api/reply', replyRoute);
+app.use('/api/chats', chatRoutes);
 app.use('/api/widgets', widgetRoute);
+app.use('/api/messages', messageRoute);
 app.use('/api/settings', settingsRoute);
 app.use('/api/comments', commentsRoute);
 app.use('/api/notifications', notificationsRoute);
