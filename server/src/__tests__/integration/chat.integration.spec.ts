@@ -73,6 +73,13 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 				_id: '_id',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
 			});
 		Chat.find = jest.fn().mockResolvedValueOnce([]);
 		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
@@ -103,6 +110,43 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 					],
 				},
 			},
+			error: '',
+		});
+	});
+
+	it('POST /api/chats/create-chat - success - if a chat already exist for both users return chat', async () => {
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				_id: 'userId',
+				email: 'email',
+				username: 'username',
+				profilePic: 'profilePic',
+			})
+			.mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username',
+				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
+			});
+		Chat.find = jest.fn().mockResolvedValueOnce([{}]);
+		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
+
+		const response = await request(app)
+			.post('/api/chats/create-chat')
+			.set('Authorization', 'Bearer Token')
+			.send({ targetId: 'targetId' });
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toEqual({
+			success: true,
+			data: { chat: {} },
 			error: '',
 		});
 	});
@@ -150,7 +194,7 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 		expect(response.body.error).toBe('Invalid userId');
 	});
 
-	it('POST /api/chats/create-chat - failure if a chat already exist for both users', async () => {
+	it('POST /api/chats/create-chat - failure if targetUser is not a friend', async () => {
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
@@ -163,9 +207,8 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 				_id: '_id',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [],
 			});
-		Chat.find = jest.fn().mockResolvedValueOnce([{}]);
-		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
 
 		const response = await request(app)
 			.post('/api/chats/create-chat')
@@ -173,7 +216,7 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 			.send({ targetId: 'targetId' });
 
 		expect(response.statusCode).toBe(400);
-		expect(response.body.error).toBe('This chat already exist');
+		expect(response.body.error).toBe('Can only chat with friends');
 	});
 });
 
@@ -191,18 +234,36 @@ describe('Integration tests for creating a group chat route', () => {
 				_id: 'userId1',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
 			})
 			.mockResolvedValueOnce({
 				_id: 'userId2',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
 			});
 		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
 
 		const response = await request(app)
 			.post('/api/chats/create-group-chat')
 			.set('Authorization', 'Bearer Token')
-			.send({ name: 'Test-Group', userIds: ['userId1', 'userId2'] });
+			.send({
+				name: 'Test-Group',
+				userIds: ['userId1', 'userId2'],
+				displayPictureUrl: 'displayPictureUrl',
+			});
 
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toEqual({
@@ -240,6 +301,7 @@ describe('Integration tests for creating a group chat route', () => {
 							profilePic: 'profilePic',
 						},
 					],
+					displayPicture: 'displayPictureUrl',
 				},
 			},
 			error: '',
@@ -272,6 +334,48 @@ describe('Integration tests for creating a group chat route', () => {
 			data: {},
 			error: 'Provide an array of strings containing userIds of minimum 2 and maximum 19 elements',
 		});
+	});
+
+	it('POST /api/chats/create-chat - failure if one of the provided userIds is not a friend', async () => {
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				_id: 'userId',
+				email: 'email',
+				username: 'username',
+				profilePic: 'profilePic',
+			})
+			.mockResolvedValueOnce({
+				_id: 'userId1',
+				username: 'username',
+				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
+			})
+			.mockResolvedValueOnce({
+				_id: 'userId2',
+				username: 'username',
+				profilePic: 'profilePic',
+				friends: [],
+			});
+		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
+
+		const response = await request(app)
+			.post('/api/chats/create-group-chat')
+			.set('Authorization', 'Bearer Token')
+			.send({
+				name: 'Test-Group',
+				userIds: ['userId1', 'userId2'],
+				displayPictureUrl: 'displayPictureUrl',
+			});
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.error).toBe('Can only add friends to a group');
 	});
 });
 
@@ -371,6 +475,13 @@ describe('Integration tests for adding a new member to group chat route', () => 
 				_id: 'userId',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'currentUserId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
@@ -489,6 +600,48 @@ describe('Integration tests for adding a new member to group chat route', () => 
 		);
 	});
 
+	it('POST /api/chats/add-member - failure if provided user is not a friend', async () => {
+		User.findById = jest
+			.fn()
+			.mockResolvedValueOnce({
+				_id: 'currentUserId',
+				username: 'username',
+				profilePic: 'profilePic',
+			})
+			.mockResolvedValueOnce({
+				_id: 'userId',
+				username: 'username',
+				profilePic: 'profilePic',
+				friends: [],
+			});
+		Chat.findById = jest.fn().mockResolvedValueOnce({
+			isGroup: true,
+			admins: [
+				{
+					id: 'currentUserId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
+			members: [
+				{
+					id: 'currentUserId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
+			save: jest.fn(),
+		});
+
+		const response = await request(app)
+			.post('/api/chats/add-member')
+			.set('Authorization', 'Berer Token')
+			.send({ chatId: 'chatId', userId: 'userId' });
+
+		expect(response.statusCode).toBe(400);
+		expect(response.body.error).toBe('Can only add friends to the group');
+	});
+
 	it('POST /api/chats/add-member - failure if provided user is already a member', async () => {
 		User.findById = jest
 			.fn()
@@ -501,6 +654,13 @@ describe('Integration tests for adding a new member to group chat route', () => 
 				_id: 'userId',
 				username: 'username',
 				profilePic: 'profilePic',
+				friends: [
+					{
+						id: 'currentUserId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,

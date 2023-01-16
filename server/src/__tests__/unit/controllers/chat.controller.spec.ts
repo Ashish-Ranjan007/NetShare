@@ -79,20 +79,42 @@ describe('Create peer-to-peer chat', () => {
 		);
 	});
 
-	it('should throw error if chat already exist for both users', async () => {
+	it('should throw an error if provided targetUser is not a friend', async () => {
 		mockRequest.body = { targetId: 'targetId' };
 		User.findById = jest.fn().mockResolvedValueOnce({
 			_id: '_id',
 			username: 'username',
 			profilePic: 'profilePic',
+			friends: [],
+		});
+
+		await createChat(mockRequest, mockResponse, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('Can only chat with friends', 400)
+		);
+	});
+
+	it('should return a status of 200 if chat already exist for both users', async () => {
+		const mockResponse: any = { status: jest.fn() };
+		mockRequest.body = { targetId: 'targetId' };
+		User.findById = jest.fn().mockResolvedValueOnce({
+			_id: '_id',
+			username: 'username',
+			profilePic: 'profilePic',
+			friends: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
 		});
 		Chat.find = jest.fn().mockResolvedValueOnce([{}]);
 
 		await createChat(mockRequest, mockResponse, mockNext);
 
-		expect(mockNext).toHaveBeenCalledWith(
-			new ErrorHandler('This chat already exist', 400)
-		);
+		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 
 	it('should create a direct message chat and return a status code of 201', async () => {
@@ -103,6 +125,13 @@ describe('Create peer-to-peer chat', () => {
 			_id: '_id',
 			username: 'username',
 			profilePic: 'profilePic',
+			friends: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
 		});
 		Chat.find = jest.fn().mockResolvedValueOnce([]);
 
@@ -113,10 +142,44 @@ describe('Create peer-to-peer chat', () => {
 });
 
 describe('Create a group chat', () => {
+	it('should throw an error if an user provided is not a friend', async () => {
+		mockRequest.body = {
+			name: 'name',
+			userIds: ['user1', 'user2', 'user3'],
+		};
+		User.findById = jest.fn().mockImplementation((x) => ({
+			_id: x,
+			username: 'username',
+			profilePic: 'profilePic',
+			friends: [],
+		}));
+		Chat.create = jest.fn().mockResolvedValueOnce({});
+
+		await createGroupChat(mockRequest, mockResponse, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('Can only add friends to a group', 400)
+		);
+	});
+
 	it('should create a group chat and return a status code of 201', async () => {
 		const mockResponse: any = { status: jest.fn() };
-		mockRequest.body = { name: 'name', userIds: [] };
-		User.findById = jest.fn().mockResolvedValue({});
+		mockRequest.body = {
+			name: 'name',
+			userIds: ['user1', 'user2', 'user3'],
+		};
+		User.findById = jest.fn().mockImplementation((x) => ({
+			_id: x,
+			username: 'username',
+			profilePic: 'profilePic',
+			friends: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
+		}));
 		Chat.create = jest.fn().mockResolvedValueOnce({});
 
 		await createGroupChat(mockRequest, mockResponse, mockNext);
@@ -216,9 +279,40 @@ describe('Add a new member', () => {
 		);
 	});
 
+	it('should throw an error if user is not a friend', async () => {
+		mockRequest.body = { chatId: 'chatId', userId: 'userId' };
+		User.findById = jest.fn().mockResolvedValueOnce({
+			friends: [],
+		});
+		Chat.findById = jest.fn().mockResolvedValueOnce({
+			isGroup: true,
+			admins: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
+		});
+
+		await addMember(mockRequest, mockResponse, mockNext);
+
+		expect(mockNext).toHaveBeenCalledWith(
+			new ErrorHandler('Can only add friends to the group', 400)
+		);
+	});
+
 	it('should throw an error if user is already a member', async () => {
 		mockRequest.body = { chatId: 'chatId', userId: 'userId' };
-		User.findById = jest.fn().mockResolvedValueOnce({});
+		User.findById = jest.fn().mockResolvedValueOnce({
+			friends: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
+		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
 			admins: [
@@ -251,6 +345,13 @@ describe('Add a new member', () => {
 			_id: 'userId',
 			username: 'username',
 			profilePic: 'profilePic',
+			friends: [
+				{
+					id: 'userId',
+					username: 'username',
+					profilePic: 'profilePic',
+				},
+			],
 		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			save: jest.fn(),

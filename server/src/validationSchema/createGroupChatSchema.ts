@@ -38,4 +38,8 @@ export const createGroupSchema = [
 
 			return true;
 		}),
+	body('displayPictureUrl')
+		.exists()
+		.isString()
+		.withMessage('Provide an url string'),
 ];

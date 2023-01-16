@@ -12,7 +12,7 @@ export interface IChat {
 	members: ProfileReference[];
 	name: 'direct message' | string;
 	createdBy: ProfileReference;
-	lastMessageId: Schema.Types.ObjectId;
+	lastMessage: Schema.Types.ObjectId;
 	displayPicture: string;
 	admins: ProfileReference[];
 	totalMessages: number;
@@ -39,7 +39,7 @@ const ChatSchema = new Schema<IChat>(
 		createdBy: {
 			type: { id: String, profilePic: String, username: String },
 		},
-		lastMessageId: {
+		lastMessage: {
 			type: Schema.Types.ObjectId,
 			ref: 'Message',
 		},
@@ -72,7 +72,7 @@ const ChatSchema = new Schema<IChat>(
 */
 
 ChatSchema.pre('remove', async function (next) {
-	await Message.find({ chatId: this._id }).then((docs) => {
+	await Message.find({ chat: this._id }).then((docs) => {
 		docs.forEach(async (doc) => {
 			await doc.delete();
 		});

@@ -9,7 +9,7 @@ type ProfileReference = {
 export interface IMessage {
 	sender: ProfileReference;
 	content: string;
-	chatId: Schema.Types.ObjectId;
+	chat: Schema.Types.ObjectId;
 	repliedTo: Schema.Types.ObjectId;
 }
 
@@ -23,7 +23,7 @@ const MessageSchema = new Schema<IMessage>(
 			type: String,
 			required: true,
 		},
-		chatId: {
+		chat: {
 			type: Schema.Types.ObjectId,
 			ref: 'Chat',
 		},

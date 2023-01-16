@@ -49,7 +49,7 @@ export const fetchMessages = catchAsyncErrors(
 				: false;
 
 		const messages = await Message.find({
-			chatId: new Types.ObjectId(chatId),
+			chat: new Types.ObjectId(chatId),
 		})
 			.sort({ createdAt: -1 })
 			.skip(page * messagesPerPage)

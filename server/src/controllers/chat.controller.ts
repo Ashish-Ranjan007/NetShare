@@ -55,6 +55,14 @@ export const createChat = catchAsyncErrors(
 			return next(new ErrorHandler('Invalid userId', 400));
 		}
 
+		// Can only chat with friends
+		const isFriend = targetUser.friends.find(
+			(friend) => friend.id === req.user._id.toString()
+		);
+		if (!isFriend) {
+			return next(new ErrorHandler('Can only chat with friends', 400));
+		}
+
 		// Build members array
 		const members = [
 			{
@@ -69,33 +77,36 @@ export const createChat = catchAsyncErrors(
 			},
 		];
 
-		// Check if this chat already exist
-		const chatAlreadyExist = await Chat.find({
+		// Return if chat already exist
+		const chat = await Chat.find({
 			$and: [
 				{ isGroup: false },
 				{ 'members.id': { $all: [members[0].id, members[1].id] } },
 			],
 		});
-		if (chatAlreadyExist.length > 0) {
-			return next(new ErrorHandler('This chat already exist', 400));
+		if (chat.length > 0) {
+			// Response
+			return res
+				.status(200)
+				.json(new ResponseData(true, { chat: chat[0] }));
 		}
 
 		// Create a new Chat
-		const chat = await Chat.create({
+		const newChat = await Chat.create({
 			isGroup: false,
 			members: members,
 			name: 'direct message',
 		});
 
 		// Response
-		res.status(201).json(new ResponseData(true, { chat }));
+		res.status(201).json(new ResponseData(true, { chat: newChat }));
 	}
 );
 
 // Create a Group Chat
 export const createGroupChat = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { name, userIds } = req.body;
+		const { name, userIds, displayPictureUrl } = req.body;
 
 		const currentUser = {
 			id: req.user._id.toString(),
@@ -116,6 +127,16 @@ export const createGroupChat = catchAsyncErrors(
 				);
 			}
 
+			// Can only add friends to a group
+			const isFriend = user.friends.find(
+				(friend) => friend.id === req.user._id.toString()
+			);
+			if (!isFriend) {
+				return next(
+					new ErrorHandler('Can only add friends to a group', 400)
+				);
+			}
+
 			// Push user into members array
 			members.push({
 				id: user._id.toString(),
@@ -132,6 +153,7 @@ export const createGroupChat = catchAsyncErrors(
 			members: members,
 			createdBy: currentUser,
 			admins: [currentUser],
+			displayPicture: displayPictureUrl,
 		});
 
 		// Response
@@ -213,6 +235,16 @@ export const addMember = catchAsyncErrors(
 					'Not authorized to perform this operation',
 					400
 				)
+			);
+		}
+
+		// Can only add friends to the group
+		const isFriend = user.friends.find(
+			(friend) => friend.id === req.user._id.toString()
+		);
+		if (!isFriend) {
+			return next(
+				new ErrorHandler('Can only add friends to the group', 400)
 			);
 		}
 
