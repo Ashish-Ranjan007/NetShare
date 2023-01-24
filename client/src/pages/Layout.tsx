@@ -70,7 +70,7 @@ const Layout: React.FC = () => {
 					sx={{
 						background: '#f5f5f5',
 						borderRadius: '16px',
-						padding: { sm: '16px 16px 0px 16px' },
+						padding: { sm: '16px 16px 0px 0px' },
 					}}
 				>
 					<ProgressContex.Provider value={setProgress}>

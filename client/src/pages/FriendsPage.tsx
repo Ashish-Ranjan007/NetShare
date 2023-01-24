@@ -5,6 +5,7 @@ const FriendsPage = () => {
 	return (
 		<Box
 			sx={{
+				paddingLeft: { sm: '16px' },
 				display: { xs: 'flex', sm: 'none' },
 				justifyContent: 'center',
 				width: '100%',

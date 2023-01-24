@@ -7,19 +7,32 @@ import {
 	useUnFollowMutation,
 } from '../../features/auth/authApiSlice';
 import UserListModal from '../UserListModal';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { setCurrentChat, addChat } from '../../features/chats/chatsSlice';
+import { useCreateOrFetchChatMutation } from '../../features/chats/chatsApiSlice';
 
 const defaultProfilePic =
 	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
 
 const UserProfileInfo = ({ username }: { username: string | undefined }) => {
+	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
 	const [postFollowUser] = useFollowMutation();
 	const [postUnFollowUser] = useUnFollowMutation();
+	const auth = useAppSelector((state) => state.auth);
+	const chats = useAppSelector((state) => state.chats.chats);
+	const [createOrFetchChat] = useCreateOrFetchChatMutation();
 	const [trigger, { data, isError, error }] = useLazyGetUserDetailsQuery();
 
 	const [isDisabled, setIsDisabled] = useState<boolean>(false);
 	const [isFollowing, setIsFollowing] = useState<boolean>(false);
 	const [openFollowers, setOpenFollowers] = useState<boolean>(false);
 	const [openFollowings, setOpenFollowings] = useState<boolean>(false);
+
+	const chatAlreadyExist = (chatId: string): boolean => {
+		return chats.find((chat) => chat._id === chatId) ? true : false;
+	};
 
 	useEffect(() => {
 		if (username && username.length > 0) {
@@ -47,6 +60,26 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 		}
 
 		setIsDisabled(false);
+	};
+
+	const handleMessage = async (userId: string) => {
+		setIsDisabled(true);
+
+		try {
+			const returned = await createOrFetchChat(userId).unwrap();
+
+			if (returned) {
+				if (!chatAlreadyExist(returned.data.chat._id)) {
+					dispatch(addChat(returned.data.chat));
+				}
+				dispatch(setCurrentChat(returned.data.chat));
+				navigate('/messages');
+			}
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsDisabled(false);
+		}
 	};
 
 	return (
@@ -104,6 +137,24 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 							>
 								{isFollowing ? 'Unfollow' : 'Follow'}
 							</Button>
+							{auth.friends.find(
+								(friend) =>
+									friend.id === data.data.user._id.toString()
+							) && (
+								<Button
+									sx={{
+										textTransform: 'capitalize',
+										padding: '2px 16px',
+									}}
+									variant="outlined"
+									onClick={() =>
+										handleMessage(data.data.user._id)
+									}
+									disabled={isDisabled}
+								>
+									Message
+								</Button>
+							)}
 						</Box>
 						<Box
 							sx={{

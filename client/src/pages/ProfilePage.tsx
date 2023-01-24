@@ -10,6 +10,7 @@ const ProfilePage = () => {
 	return (
 		<Box
 			sx={{
+				paddingLeft: { sm: '16px' },
 				height: 'calc(100vh - 80px)',
 				overflowY: 'auto',
 			}}

@@ -69,7 +69,7 @@ const NotificationPage = () => {
 	}, [notifications]);
 
 	return (
-		<Grid container spacing={2}>
+		<Grid container spacing={2} sx={{ paddingLeft: { sm: '16px' } }}>
 			<Grid
 				item
 				xs={12}

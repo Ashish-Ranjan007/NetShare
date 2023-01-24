@@ -88,7 +88,8 @@ const SuggestedProfiles = () => {
 									style={{
 										width: '100%',
 										color: 'inherit',
-										textAlign: 'center',
+										textAlign: 'left',
+										paddingLeft: '8px',
 									}}
 								>
 									{profile.username}

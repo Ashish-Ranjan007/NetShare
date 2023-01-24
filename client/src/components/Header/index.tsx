@@ -1,4 +1,4 @@
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -68,9 +68,11 @@ const Header = (props: Props) => {
 						justifyContent: 'flex-end',
 					}}
 				>
-					<div onClick={() => props.setToggle((prev) => !prev)}>
+					<IconButton
+						onClick={() => props.setToggle((prev) => !prev)}
+					>
 						<MenuIcon fontSize="large" />
-					</div>
+					</IconButton>
 				</Grid>
 
 				<Grid

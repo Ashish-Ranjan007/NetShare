@@ -23,7 +23,7 @@ const SinglePostPage = () => {
 	}, [isSuccess]);
 
 	return (
-		<Grid container spacing={2}>
+		<Grid container spacing={2} sx={{ paddingLeft: { sm: '16px' } }}>
 			<Grid
 				id="scrollable-comment-section"
 				item

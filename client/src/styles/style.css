@@ -75,3 +75,19 @@ a.active {
 textarea#bio::-webkit-scrollbar {
 	width: 0px;
 }
+
+.message-container-bg {
+	background-color: #f1f1f1;
+	opacity: 1;
+	background-image: radial-gradient(
+		#a7acfc 0.35000000000000003px,
+		#f1f1f1 0.35000000000000003px
+	);
+	background-size: 7px 7px;
+}
+
+/* Emoji Picker */
+.EmojiPickerReact {
+	position: absolute;
+	top: -350px;
+}

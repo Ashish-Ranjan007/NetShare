@@ -220,6 +220,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 					opacity: show ? 1 : 0,
 					visibility: show ? 'visible' : 'hidden',
 					transition: 'visibility 300ms ease, opacity 300ms ease',
+					zIndex: '999',
 				}}
 			>
 				<List

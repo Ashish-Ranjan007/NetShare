@@ -9,7 +9,13 @@ const SettingsPage = () => {
 	);
 
 	return (
-		<Box sx={{ height: 'calc(100vh - 75px)', overflowY: 'auto' }}>
+		<Box
+			sx={{
+				height: 'calc(100vh - 80px)',
+				overflowY: 'auto',
+				paddingLeft: { sm: '16px' },
+			}}
+		>
 			<Box
 				sx={{
 					width: '100%',
