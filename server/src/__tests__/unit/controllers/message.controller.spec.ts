@@ -28,6 +28,7 @@ jest.mock('../../../models/Message.model');
 
 describe('Fetch messages of a chat', () => {
 	it('should throw an error if chatId is not provided', async () => {
+		mockRequest.query = {};
 		await fetchMessages(mockRequest, mockResponse, mockNext);
 
 		expect(mockNext).toHaveBeenCalledWith(
@@ -36,7 +37,7 @@ describe('Fetch messages of a chat', () => {
 	});
 
 	it('should throw an error if provided chatId is invalid', async () => {
-		mockRequest.body = { chatId: 'chatId' };
+		mockRequest.query = { chatId: '6382dfe80a6e1ffcb2f52cce' };
 		Chat.findById = jest.fn().mockResolvedValueOnce(null);
 
 		await fetchMessages(mockRequest, mockResponse, mockNext);
@@ -47,7 +48,7 @@ describe('Fetch messages of a chat', () => {
 	});
 
 	it('should throw an error if current user is not a member of the chat', async () => {
-		mockRequest.body = { chatId: 'chatId' };
+		mockRequest.query = { chatId: '6382dfe80a6e1ffcb2f52cce' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			members: [],
 		});
@@ -61,8 +62,7 @@ describe('Fetch messages of a chat', () => {
 
 	it('should return a status of 200', async () => {
 		const mockResponse: any = { status: jest.fn() };
-		mockRequest.body = { chatId: '6382dfe80a6e1ffcb2f52cce' };
-		mockRequest.query = {};
+		mockRequest.query = { chatId: '6382dfe80a6e1ffcb2f52cce' };
 
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			members: [
@@ -77,7 +77,9 @@ describe('Fetch messages of a chat', () => {
 		Message.find = jest.fn().mockImplementationOnce(() => ({
 			sort: jest.fn().mockImplementationOnce(() => ({
 				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockResolvedValueOnce([]),
+					limit: jest.fn().mockImplementationOnce(() => ({
+						populate: jest.fn().mockResolvedValueOnce([]),
+					})),
 				})),
 			})),
 		}));
@@ -132,11 +134,7 @@ describe('Delete a message', () => {
 		const mockResponse: any = { status: jest.fn() };
 		mockRequest.body = { messageId: 'messageId' };
 		Message.findById = jest.fn().mockResolvedValueOnce({
-			sender: {
-				id: 'userId',
-				username: 'username',
-				profilePic: 'profilePic',
-			},
+			sender: 'userId',
 			delete: jest.fn(),
 		});
 

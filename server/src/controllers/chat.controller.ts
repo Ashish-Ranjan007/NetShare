@@ -5,6 +5,7 @@ import { User } from '../models/User.model';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
+import mongoose, { Types } from 'mongoose';
 
 // Fetch all chats user is involved in
 export const fetchAllChats = catchAsyncErrors(
@@ -30,7 +31,14 @@ export const fetchAllChats = catchAsyncErrors(
 		})
 			.sort({ updatedAt: -1 })
 			.skip(page * chatsPerPage)
-			.limit(chatsPerPage);
+			.limit(chatsPerPage)
+			.populate({
+				path: 'lastMessage',
+				populate: {
+					path: 'sender',
+					select: '_id username profilePic',
+				},
+			});
 
 		// Response
 		res.status(200).json(
@@ -96,6 +104,10 @@ export const createChat = catchAsyncErrors(
 			isGroup: false,
 			members: members,
 			name: 'direct message',
+			unreadMessages: [
+				{ userId: members[0].id, newMessages: 0 },
+				{ userId: members[1].id, newMessages: 0 },
+			],
 		});
 
 		// Response
@@ -116,8 +128,12 @@ export const createGroupChat = catchAsyncErrors(
 
 		const members: { id: string; username: string; profilePic: string }[] =
 			[];
+		const unreadMessages: {
+			userId: mongoose.Types.ObjectId;
+			newMessages: number;
+		}[] = [];
 
-		// Build members array
+		// Build members and unreadMessages array
 		for (let i = 0; i < userIds.length; i++) {
 			// Check if all userIds are valid
 			const user = await User.findById(userIds[i]);
@@ -143,8 +159,20 @@ export const createGroupChat = catchAsyncErrors(
 				username: user.username,
 				profilePic: user.profilePic,
 			});
+			// Push user into unreadMessages array
+			unreadMessages.push({
+				userId: user._id,
+				newMessages: 0,
+			});
 		}
-		members.push(currentUser); // Push current user into members array
+
+		// Push current user into members array
+		members.push(currentUser);
+		// Push current user into unreadMessages array
+		unreadMessages.push({
+			userId: new Types.ObjectId(req.user._id),
+			newMessages: 0,
+		});
 
 		// Create Group Chat
 		const groupChat = await Chat.create({
@@ -153,6 +181,7 @@ export const createGroupChat = catchAsyncErrors(
 			members: members,
 			createdBy: currentUser,
 			admins: [currentUser],
+			unreadMessages: unreadMessages,
 			displayPicture: displayPictureUrl,
 		});
 
@@ -264,6 +293,13 @@ export const addMember = catchAsyncErrors(
 			username: user.username,
 			profilePic: user.profilePic,
 		});
+
+		// Add new member to the unreadMessages
+		groupChat.unreadMessages.push({
+			userId: user._id,
+			newMessages: 0,
+		});
+
 		await groupChat.save();
 
 		// Response
@@ -314,6 +350,9 @@ export const removeMember = catchAsyncErrors(
 		);
 		groupChat.admins = groupChat.admins.filter(
 			(admin) => admin.id !== memberId
+		);
+		groupChat.unreadMessages = groupChat.unreadMessages.filter(
+			(member) => member.userId.toString() !== memberId
 		);
 
 		// Delete chat if members array is emptied after removal
@@ -489,6 +528,52 @@ export const setDisplayPicture = catchAsyncErrors(
 
 		// Set display picture
 		chat.displayPicture = displayPictureUrl;
+		await chat.save();
+
+		// Response
+		res.status(200).json(new ResponseData(true, { groupChat: chat }));
+	}
+);
+
+// Reset unreadMessage
+export const resetUnreadMessages = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { chatId } = req.body;
+
+		// Validate request body
+		if (!chatId) {
+			return next(new ErrorHandler('Provide a chatId', 400));
+		}
+
+		// Check if chat exist
+		const chat = await Chat.findById(chatId);
+		if (!chat) {
+			return next(new ErrorHandler('Provided chatId is invalid', 400));
+		}
+
+		// Check if current user is a member of the chat
+		const isMember = chat.members.find(
+			(member) => member.id === req.user._id.toString()
+		);
+		if (!isMember) {
+			return next(
+				new ErrorHandler(
+					'Not authorized to perform this operation',
+					400
+				)
+			);
+		}
+
+		// Reset unreadMessages
+		for (let i = 0; i < chat.unreadMessages.length; i++) {
+			if (
+				chat.unreadMessages[i].userId.toString() ===
+				req.user._id.toString()
+			) {
+				chat.unreadMessages[i].newMessages = 0;
+				break;
+			}
+		}
 		await chat.save();
 
 		// Response

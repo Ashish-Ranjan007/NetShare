@@ -48,7 +48,9 @@ describe('Fetch chats', () => {
 		Chat.find = jest.fn().mockImplementationOnce(() => ({
 			sort: jest.fn().mockImplementationOnce(() => ({
 				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockResolvedValueOnce([]),
+					limit: jest.fn().mockImplementationOnce(() => ({
+						populate: jest.fn().mockResolvedValueOnce([]),
+					})),
 				})),
 			})),
 		}));
@@ -164,17 +166,46 @@ describe('Create a group chat', () => {
 
 	it('should create a group chat and return a status code of 201', async () => {
 		const mockResponse: any = { status: jest.fn() };
-		mockRequest.body = {
-			name: 'name',
-			userIds: ['user1', 'user2', 'user3'],
-		};
+		const mockRequest = {
+			body: {
+				name: 'name',
+				userIds: [
+					'63a29bb60eeb6c7e7e415c42',
+					'63a29bb60eeb6c7e7e415c48',
+					'63a29bb60eeb6c7e7e415c49',
+				],
+			},
+			user: {
+				_id: '63a29bb60eeb6c7e7e415d42',
+				username: 'username',
+				profilePic: 'profilePic',
+				friends: [
+					{
+						id: '63a29bb60eeb6c7e7e415c42',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+					{
+						id: '63a29bb60eeb6c7e7e415c48',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+					{
+						id: '63a29bb60eeb6c7e7e415c49',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
+			},
+		} as Request;
+
 		User.findById = jest.fn().mockImplementation((x) => ({
 			_id: x,
 			username: 'username',
 			profilePic: 'profilePic',
 			friends: [
 				{
-					id: 'userId',
+					id: '63a29bb60eeb6c7e7e415d42',
 					username: 'username',
 					profilePic: 'profilePic',
 				},
@@ -364,6 +395,7 @@ describe('Add a new member', () => {
 				},
 			],
 			members: [],
+			unreadMessages: [],
 		});
 
 		await addMember(mockRequest, mockResponse, mockNext);
@@ -449,6 +481,7 @@ describe('Remove a member', () => {
 					profilePic: 'profilePic',
 				},
 			],
+			unreadMessages: [{ userId: 'userId', newMessage: 0 }],
 			delete: jest.fn(),
 		});
 
@@ -480,6 +513,10 @@ describe('Remove a member', () => {
 					username: 'username',
 					profilePic: 'profilePic',
 				},
+			],
+			unreadMessages: [
+				{ userId: 'userId', newMessages: 0 },
+				{ userId: 'memberId', newMessages: 0 },
 			],
 			save: jest.fn(),
 		});

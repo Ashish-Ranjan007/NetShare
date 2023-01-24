@@ -11,6 +11,7 @@ import {
 	removeMember,
 	setDisplayPicture,
 	deleteChat,
+	resetUnreadMessages,
 } from '../controllers/chat.controller';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequestSchema } from '../middlewares/validateRequestSchema';
@@ -32,6 +33,7 @@ chatRoutes.post('/add-member', [isAuthenticated], addMember);
 chatRoutes.post('/remove-member', [isAuthenticated], removeMember);
 chatRoutes.post('/add-admin', [isAuthenticated], addAdmin);
 chatRoutes.post('/remove-admin', [isAuthenticated], removeAdmin);
+chatRoutes.post('/seen-all-messages', [isAuthenticated], resetUnreadMessages);
 chatRoutes.post('/set-display-picture', [isAuthenticated], setDisplayPicture);
 chatRoutes.delete('/delete-chat', [isAuthenticated], deleteChat);
 chatRoutes.delete('/delete-group-chat', [isAuthenticated], deleteChat);

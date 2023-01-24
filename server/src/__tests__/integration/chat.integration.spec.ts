@@ -37,7 +37,9 @@ describe('Integration tests for fetching chats of an user route', () => {
 		Chat.find = jest.fn().mockImplementationOnce(() => ({
 			sort: jest.fn().mockImplementationOnce(() => ({
 				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockResolvedValueOnce([]),
+					limit: jest.fn().mockImplementationOnce(() => ({
+						populate: jest.fn().mockResolvedValueOnce([]),
+					})),
 				})),
 			})),
 		}));
@@ -106,6 +108,16 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 							id: '_id',
 							profilePic: 'profilePic',
 							username: 'username',
+						},
+					],
+					unreadMessages: [
+						{
+							newMessages: 0,
+							userId: 'userId',
+						},
+						{
+							newMessages: 0,
+							userId: '_id',
 						},
 					],
 				},
@@ -225,30 +237,30 @@ describe('Integration tests for creating a group chat route', () => {
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
-				_id: 'userId',
+				_id: '63a29bb60eeb6c7e7e415c42',
 				email: 'email',
 				username: 'username',
 				profilePic: 'profilePic',
 			})
 			.mockResolvedValueOnce({
-				_id: 'userId1',
+				_id: '63a29bb60eeb6c7e7e415c48',
 				username: 'username',
 				profilePic: 'profilePic',
 				friends: [
 					{
-						id: 'userId',
+						id: '63a29bb60eeb6c7e7e415c42',
 						username: 'username',
 						profilePic: 'profilePic',
 					},
 				],
 			})
 			.mockResolvedValueOnce({
-				_id: 'userId2',
+				_id: '63a29bb60eeb6c7e7e415c49',
 				username: 'username',
 				profilePic: 'profilePic',
 				friends: [
 					{
-						id: 'userId',
+						id: '63a29bb60eeb6c7e7e415c42',
 						username: 'username',
 						profilePic: 'profilePic',
 					},
@@ -261,7 +273,10 @@ describe('Integration tests for creating a group chat route', () => {
 			.set('Authorization', 'Bearer Token')
 			.send({
 				name: 'Test-Group',
-				userIds: ['userId1', 'userId2'],
+				userIds: [
+					'63a29bb60eeb6c7e7e415c48',
+					'63a29bb60eeb6c7e7e415c49',
+				],
 				displayPictureUrl: 'displayPictureUrl',
 			});
 
@@ -274,34 +289,48 @@ describe('Integration tests for creating a group chat route', () => {
 					name: 'Test-Group',
 					members: [
 						{
-							id: 'userId1',
+							id: '63a29bb60eeb6c7e7e415c48',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'userId2',
+							id: '63a29bb60eeb6c7e7e415c49',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'userId',
+							id: '63a29bb60eeb6c7e7e415c42',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					createdBy: {
-						id: 'userId',
+						id: '63a29bb60eeb6c7e7e415c42',
 						username: 'username',
 						profilePic: 'profilePic',
 					},
 					admins: [
 						{
-							id: 'userId',
+							id: '63a29bb60eeb6c7e7e415c42',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					displayPicture: 'displayPictureUrl',
+					unreadMessages: [
+						{
+							newMessages: 0,
+							userId: '63a29bb60eeb6c7e7e415c48',
+						},
+						{
+							newMessages: 0,
+							userId: '63a29bb60eeb6c7e7e415c49',
+						},
+						{
+							newMessages: 0,
+							userId: '63a29bb60eeb6c7e7e415c42',
+						},
+					],
 				},
 			},
 			error: '',
@@ -499,6 +528,7 @@ describe('Integration tests for adding a new member to group chat route', () => 
 					profilePic: 'profilePic',
 				},
 			],
+			unreadMessages: [],
 			save: jest.fn(),
 		});
 
@@ -530,6 +560,12 @@ describe('Integration tests for adding a new member to group chat route', () => 
 							id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
+						},
+					],
+					unreadMessages: [
+						{
+							newMessages: 0,
+							userId: 'userId',
 						},
 					],
 				},
@@ -719,6 +755,10 @@ describe('Integration tests for removing a member from group chat route', () => 
 					profilePic: 'profilePic',
 				},
 			],
+			unreadMessages: [
+				{ userId: 'userId', newMessages: 0 },
+				{ userId: 'memberId', newMessages: 0 },
+			],
 			save: jest.fn(),
 		});
 
@@ -747,6 +787,7 @@ describe('Integration tests for removing a member from group chat route', () => 
 							profilePic: 'profilePic',
 						},
 					],
+					unreadMessages: [{ userId: 'userId', newMessages: 0 }],
 				},
 			},
 			error: '',
@@ -770,6 +811,7 @@ describe('Integration tests for removing a member from group chat route', () => 
 					profilePic: 'profilePic',
 				},
 			],
+			unreadMessages: [{ userId: 'id', newMessages: 0 }],
 			save: jest.fn(),
 			delete: jest.fn(),
 		});
@@ -787,7 +829,7 @@ describe('Integration tests for removing a member from group chat route', () => 
 		});
 	});
 
-	it('POST /api/chats/remove-member - success - make a member admin if not admins are remaining after removal', async () => {
+	it('POST /api/chats/remove-member - success - make a member admin if no admins are remaining after removal', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
 			admins: [
@@ -808,6 +850,10 @@ describe('Integration tests for removing a member from group chat route', () => 
 					username: 'username',
 					profilePic: 'profilePic',
 				},
+			],
+			unreadMessages: [
+				{ userId: 'userId', newMessages: 0 },
+				{ userId: 'memberId', newMessages: 0 },
 			],
 			save: jest.fn(),
 			delete: jest.fn(),
@@ -838,6 +884,7 @@ describe('Integration tests for removing a member from group chat route', () => 
 							profilePic: 'profilePic',
 						},
 					],
+					unreadMessages: [{ userId: 'memberId', newMessages: 0 }],
 				},
 			},
 			error: '',

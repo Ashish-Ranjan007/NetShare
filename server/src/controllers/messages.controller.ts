@@ -10,7 +10,7 @@ import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 // Fetch messages for a chat
 export const fetchMessages = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { chatId } = req.body;
+		const { chatId } = req.query;
 
 		// Validate request body
 		if (!chatId) {
@@ -49,11 +49,12 @@ export const fetchMessages = catchAsyncErrors(
 				: false;
 
 		const messages = await Message.find({
-			chat: new Types.ObjectId(chatId),
+			chat: new Types.ObjectId(chatId as string),
 		})
 			.sort({ createdAt: -1 })
 			.skip(page * messagesPerPage)
-			.limit(messagesPerPage);
+			.limit(messagesPerPage)
+			.populate({ path: 'sender', select: '_id username profilePic' });
 
 		// Response
 		res.status(200).json(
@@ -79,7 +80,7 @@ export const deleteMessage = catchAsyncErrors(
 		}
 
 		// Only creator can delete a message
-		if (message.sender.id !== req.user._id.toString()) {
+		if (message.sender !== req.user._id.toString()) {
 			return next(
 				new ErrorHandler(
 					'Only creator of a message is authorized to delete it',

@@ -48,15 +48,16 @@ describe('Integration tests for fetching the messages of a chat route', () => {
 		Message.find = jest.fn().mockImplementationOnce(() => ({
 			sort: jest.fn().mockImplementationOnce(() => ({
 				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockResolvedValueOnce([]),
+					limit: jest.fn().mockImplementationOnce(() => ({
+						populate: jest.fn().mockResolvedValueOnce([]),
+					})),
 				})),
 			})),
 		}));
 
 		const response = await request(app)
-			.get('/api/messages')
-			.set('Authorization', 'Bearer Token')
-			.send({ chatId: '6382dfe80a6e1ffcb2f52cce' });
+			.get('/api/messages/?chatId=6382dfe80a6e1ffcb2f52cce')
+			.set('Authorization', 'Bearer Token');
 
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
@@ -72,7 +73,7 @@ describe('Integration tests for fetching the messages of a chat route', () => {
 
 	it('GET /api/messages/ - failure if chatId is not provided', async () => {
 		const response = await request(app)
-			.get('/api/messages')
+			.get('/api/messages/')
 			.set('Authorization', 'Bearer Token');
 
 		expect(response.statusCode).toBe(400);
@@ -83,9 +84,8 @@ describe('Integration tests for fetching the messages of a chat route', () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce(null);
 
 		const response = await request(app)
-			.get('/api/messages')
-			.set('Authorization', 'Bearer Token')
-			.send({ chatId: '6382dfe80a6e1ffcb2f52cce' });
+			.get('/api/messages/?chatId=6382dfe80a6e1ffcb2f52cce')
+			.set('Authorization', 'Bearer Token');
 
 		expect(response.statusCode).toBe(400);
 		expect(response.body.error).toBe('Provided chatId is invalid');
@@ -97,9 +97,8 @@ describe('Integration tests for fetching the messages of a chat route', () => {
 		});
 
 		const response = await request(app)
-			.get('/api/messages')
-			.set('Authorization', 'Bearer Token')
-			.send({ chatId: '6382dfe80a6e1ffcb2f52cce' });
+			.get('/api/messages/?chatId=6382dfe80a6e1ffcb2f52cce')
+			.set('Authorization', 'Bearer Token');
 
 		expect(response.statusCode).toBe(400);
 		expect(response.body.error).toBe(
@@ -111,11 +110,7 @@ describe('Integration tests for fetching the messages of a chat route', () => {
 describe('Integration tests for deleting a message route', () => {
 	it('DELETE /api/messages/delete - success - delete the provided message', async () => {
 		Message.findById = jest.fn().mockResolvedValueOnce({
-			sender: {
-				id: 'userId',
-				username: 'username',
-				profilePic: 'profilePic',
-			},
+			sender: 'userId',
 			delete: jest.fn(),
 		});
 

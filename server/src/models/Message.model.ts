@@ -1,22 +1,17 @@
-import { model, Schema } from 'mongoose';
-
-type ProfileReference = {
-	id: string;
-	profilePic: string;
-	username: string;
-};
+import mongoose, { model, Schema } from 'mongoose';
 
 export interface IMessage {
-	sender: ProfileReference;
+	sender: mongoose.Types.ObjectId;
 	content: string;
-	chat: Schema.Types.ObjectId;
-	repliedTo: Schema.Types.ObjectId;
+	chat: mongoose.Types.ObjectId;
+	repliedTo: mongoose.Types.ObjectId;
 }
 
 const MessageSchema = new Schema<IMessage>(
 	{
 		sender: {
-			type: { id: String, profilePic: String, username: String },
+			type: Schema.Types.ObjectId,
+			ref: 'User',
 			required: true,
 		},
 		content: {
@@ -26,6 +21,7 @@ const MessageSchema = new Schema<IMessage>(
 		chat: {
 			type: Schema.Types.ObjectId,
 			ref: 'Chat',
+			required: true,
 		},
 		repliedTo: {
 			type: Schema.Types.ObjectId,

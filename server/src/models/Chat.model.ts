@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import mongoose, { model, Schema } from 'mongoose';
 import { Message } from './Message.model';
 
 type ProfileReference = {
@@ -12,14 +12,14 @@ export interface IChat {
 	members: ProfileReference[];
 	name: 'direct message' | string;
 	createdBy: ProfileReference;
-	lastMessage: Schema.Types.ObjectId;
+	lastMessage: mongoose.Types.ObjectId;
 	displayPicture: string;
 	admins: ProfileReference[];
 	totalMessages: number;
 	unreadMessages: {
-		userId: Schema.Types.ObjectId;
+		userId: mongoose.Types.ObjectId;
 		newMessages: number;
-	};
+	}[];
 }
 
 const ChatSchema = new Schema<IChat>(
@@ -55,10 +55,12 @@ const ChatSchema = new Schema<IChat>(
 			default: 0,
 		},
 		unreadMessages: {
-			type: {
-				userId: Schema.Types.ObjectId,
-				newMessages: Number,
-			},
+			type: [
+				{
+					userId: { type: Schema.Types.ObjectId, ref: 'User' },
+					newMessages: Number,
+				},
+			],
 		},
 	},
 	{ timestamps: true }
