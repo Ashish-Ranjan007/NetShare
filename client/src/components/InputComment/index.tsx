@@ -1,10 +1,7 @@
 import { Box } from '@mui/system';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
-import { Dispatch, FormEvent, SetStateAction } from 'react';
 import { Send } from '@mui/icons-material';
-
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
+import { Dispatch, FormEvent, SetStateAction } from 'react';
+import { Avatar, IconButton, InputAdornment, TextField } from '@mui/material';
 
 const InputComment = ({
 	open,
@@ -21,15 +18,13 @@ const InputComment = ({
 }) => {
 	return (
 		<Box sx={{ display: open ? 'flex' : 'none', paddingY: '8px' }}>
-			<Box
+			<Avatar
 				sx={{
 					width: '32px',
 					height: '32px',
-					borderRadius: '100%',
 					marginRight: '16px',
 				}}
-				component="img"
-				src={profilePic.length > 0 ? profilePic : defaultProfilePic}
+				src={profilePic}
 			/>
 			<form style={{ width: '100%' }} onSubmit={handleSubmit}>
 				<TextField

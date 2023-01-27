@@ -101,6 +101,7 @@ const App: React.FC = () => {
 							path="/comment/:commentId"
 							element={<SingleCommentPage />}
 						/>
+						<Route path="*" element={<NotFoundPage />} />
 					</Route>
 					<Route
 						path={LOGIN}
@@ -118,7 +119,6 @@ const App: React.FC = () => {
 							</IsUserLoggedIn>
 						}
 					/>
-					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			)}
 		</Suspense>

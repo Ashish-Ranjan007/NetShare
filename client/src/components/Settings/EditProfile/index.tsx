@@ -21,9 +21,6 @@ type FormValues = {
 	gender: 'Male' | 'Female' | 'Others' | null;
 };
 
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
-
 const dropDownOptions = [
 	{ key: 'Select an option', value: null },
 	{ key: 'Male', value: 'Male' },
@@ -142,11 +139,7 @@ const EditProfile = () => {
 									>
 										<Avatar
 											sx={{ marginLeft: 'auto' }}
-											src={
-												auth.profilePic.length > 0
-													? auth.profilePic
-													: defaultProfilePic
-											}
+											src={auth.profilePic}
 										/>
 									</Box>
 									<Box sx={{ width: '100%' }}>

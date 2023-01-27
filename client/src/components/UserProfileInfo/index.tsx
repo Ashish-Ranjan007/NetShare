@@ -12,9 +12,6 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { setCurrentChat, addChat } from '../../features/chats/chatsSlice';
 import { useCreateOrFetchChatMutation } from '../../features/chats/chatsApiSlice';
 
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
-
 const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
@@ -106,11 +103,7 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 								margin: { xs: '16px 0px', lg: 'auto' },
 								border: '2px solid #1976d2',
 							}}
-							src={
-								data.data.user.profilePic.length > 0
-									? data.data.user.profilePic
-									: defaultProfilePic
-							}
+							src={data.data.user.profilePic}
 							alt="profile picture"
 						/>
 					</Box>

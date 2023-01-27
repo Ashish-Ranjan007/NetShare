@@ -11,9 +11,6 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { resetNotifications } from '../features/auth/authSlice';
 import { setNotificaitons } from '../features/notifications/notificationSlice';
 
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
-
 const NotificationPage = () => {
 	const [page, setPage] = useState<number>(0);
 	const [hasMore, setHasMore] = useState<boolean>(true);
@@ -227,12 +224,7 @@ const NotificationPage = () => {
 									}}
 								>
 									<Avatar
-										src={
-											notification.user.profilePic
-												.length > 0
-												? notification.user.profilePic
-												: defaultProfilePic
-										}
+										src={notification.user.profilePic}
 										alt={`profile picture of ${notification.user.username}`}
 									/>
 									<Box>

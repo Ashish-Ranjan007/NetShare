@@ -38,9 +38,6 @@ import {
 import { useAppDispatch } from '../../app/hooks';
 import ShareOptionsModal from '../ShareOptionsModal';
 
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
-
 const Post = ({ post, index }: { post: FeedType; index: number }) => {
 	const dispatch = useAppDispatch();
 	const [postUnfollow] = useUnFollowMutation();
@@ -83,15 +80,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 			variant="outlined"
 		>
 			<CardHeader
-				avatar={
-					<Avatar
-						src={
-							post.createdBy.profilePic.length > 0
-								? post.createdBy.profilePic
-								: defaultProfilePic
-						}
-					/>
-				}
+				avatar={<Avatar src={post.createdBy.profilePic} />}
 				action={
 					<IconButton
 						aria-label="settings"

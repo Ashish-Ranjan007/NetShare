@@ -16,9 +16,6 @@ import { useFollowMutation } from '../../../features/auth/authApiSlice';
 import { setSuggestedProfiles } from '../../../features/widgets/widgetsSlice';
 import { useLazyGetSuggestedProfilesQuery } from '../../../features/widgets/widgetsApiSlice';
 
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
-
 const SuggestedProfiles = () => {
 	const dispatch = useAppDispatch();
 	const [postFollowUser] = useFollowMutation();
@@ -73,14 +70,13 @@ const SuggestedProfiles = () => {
 									display: 'flex',
 									alignItems: 'center',
 									justifyContent: 'space-between',
+									':hover': {
+										background: '#f0f0f0',
+									},
 								}}
 							>
 								<Avatar
-									src={
-										profile.profilePic.length > 0
-											? profile.profilePic
-											: defaultProfilePic
-									}
+									src={profile.profilePic}
 									alt={`${profile.username}'s profile picture`}
 								/>
 								<Link

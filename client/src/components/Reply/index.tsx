@@ -1,4 +1,5 @@
 import {
+	Avatar,
 	Button,
 	Dialog,
 	DialogActions,
@@ -24,9 +25,6 @@ import {
 } from '../../features/reply/replyApiSlice';
 import InputComment from '../InputComment';
 import getTimeDiff from '../../utils/getTimeDiff';
-
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
 
 const Reply = ({
 	index,
@@ -156,19 +154,14 @@ const Reply = ({
 				paddingY: '8px',
 			}}
 		>
-			<Box
+			<Avatar
 				sx={{
 					width: '32px',
 					height: '32px',
-					borderRadius: '100%',
+
 					marginRight: '16px',
 				}}
-				component="img"
-				src={
-					reply.createdBy.profilePic.length > 0
-						? reply.createdBy.profilePic
-						: defaultProfilePic
-				}
+				src={reply.createdBy.profilePic}
 			/>
 			<Box sx={{ width: '100%' }}>
 				<Box

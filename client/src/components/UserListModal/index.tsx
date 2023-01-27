@@ -1,15 +1,13 @@
-import { Avatar, List, ListItem, Modal, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ProfileReference } from '../../@types/responseType';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Avatar, List, ListItem, Modal, Typography } from '@mui/material';
+
 import {
 	useLazyFollowersQuery,
 	useLazyFollowingsQuery,
 } from '../../features/auth/authApiSlice';
-
-const defaultProfilePic =
-	'https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80';
+import { ProfileReference } from '../../@types/responseType';
 
 const UserListModal = ({
 	open,
@@ -85,11 +83,7 @@ const UserListModal = ({
 									}}
 								>
 									<Avatar
-										src={
-											user.profilePic.length > 0
-												? user.profilePic
-												: defaultProfilePic
-										}
+										src={user.profilePic}
 										alt={`${user.username}'s profile picture`}
 									/>
 									<Typography>{user.username}</Typography>
