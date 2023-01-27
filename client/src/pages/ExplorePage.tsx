@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
 import { useEffect, useState } from 'react';
 import { useAppSelector } from '../app/hooks';
-import { CircularProgress, Grid } from '@mui/material';
+import { CircularProgress, Grid, Typography } from '@mui/material';
 
 import { Box } from '@mui/system';
 import WidgetSection from '../components/WidgetSection';
@@ -108,6 +108,13 @@ const ExplorePage = () => {
 						})}
 					</Masonry>
 				</InfiniteScroll>
+				{posts.length === 0 && (
+					<Box>
+						<Typography variant="h6" textAlign="center">
+							There are no posts available to explore.
+						</Typography>
+					</Box>
+				)}
 			</Grid>
 			<Grid item xs={0} lg={4}>
 				<WidgetSection />

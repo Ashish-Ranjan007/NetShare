@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Box } from '@mui/system';
 import { useEffect, useState } from 'react';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import Post from '../Post';
@@ -62,6 +62,13 @@ const FeedSection = () => {
 					<Post key={feed._id} post={feed} index={index} />
 				))}
 			</InfiniteScroll>
+			{feeds.length === 0 && (
+				<Box>
+					<Typography variant="h6" sx={{ textAlign: 'center' }}>
+						Follow people to see their posts.
+					</Typography>
+				</Box>
+			)}
 		</Box>
 	);
 };

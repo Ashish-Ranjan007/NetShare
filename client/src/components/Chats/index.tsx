@@ -223,6 +223,13 @@ const Chats = () => {
 					<GroupCreationForm setOpen={setOpenModal} />
 				</Box>
 			</Modal>
+			{chats.length === 0 && (
+				<Box>
+					<Typography textAlign="center">
+						You have no chats.
+					</Typography>
+				</Box>
+			)}
 		</Box>
 	);
 };

@@ -15,6 +15,7 @@ import { MessageType } from '../../@types/responseType';
 import getUnreadMessages from '../../utils/getUnreadMessages';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useResetUnreadMessagesMutation } from '../../features/chats/chatsApiSlice';
+import { Typography } from '@mui/material';
 
 let socket: Socket;
 const SERVER_ENDPOINT = 'http://localhost:8000';
@@ -129,7 +130,20 @@ const MessageSection = () => {
 					<MessageBox socket={socket} />
 				</>
 			)}
-			{!currentChat && <p>No chat is currently selected</p>}
+			{!currentChat && (
+				<Typography
+					variant="h6"
+					textAlign="center"
+					sx={{
+						position: 'absolute',
+						top: '50%',
+						left: '50%',
+						transform: 'translate(-50%, -50%)',
+					}}
+				>
+					No chat is currently selected
+				</Typography>
+			)}
 		</Box>
 	);
 };

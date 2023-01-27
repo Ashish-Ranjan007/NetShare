@@ -11,6 +11,28 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { resetNotifications } from '../features/auth/authSlice';
 import { setNotificaitons } from '../features/notifications/notificationSlice';
 
+const customScrollbar = {
+	/* width */
+	'::-webkit-scrollbar': {
+		width: '8px',
+	},
+
+	/* Track */
+	'::-webkit-scrollbar-track': {
+		background: '#f1f1f1',
+	},
+
+	/* Handle */
+	'::-webkit-scrollbar-thumb': {
+		background: '#888',
+	},
+
+	/* Handle on hover */
+	'::-webkit-scrollbar-thumb:hover': {
+		background: '#555',
+	},
+};
+
 const NotificationPage = () => {
 	const [page, setPage] = useState<number>(0);
 	const [hasMore, setHasMore] = useState<boolean>(true);
@@ -73,7 +95,8 @@ const NotificationPage = () => {
 				lg={8}
 				sx={{
 					height: 'calc(100vh - 75px)',
-					overflowY: 'scroll',
+					overflowY: 'auto',
+					...customScrollbar,
 				}}
 				id="notification-section-scroll"
 			>
@@ -243,6 +266,13 @@ const NotificationPage = () => {
 						);
 					})}
 				</InfiniteScroll>
+				{notifications.length === 0 && (
+					<Box>
+						<Typography variant="h6" textAlign="center">
+							You have no notifications.
+						</Typography>
+					</Box>
+				)}
 			</Grid>
 			<Grid item xs={0} lg={4}>
 				<WidgetSection />

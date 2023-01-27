@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
 import { useEffect, useState } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { useAppSelector } from '../../app/hooks';
@@ -91,6 +91,13 @@ const UserProfilePostList = ({ userId }: { userId: string | undefined }) => {
 					})}
 				</Masonry>
 			</InfiniteScroll>
+			{posts.length === 0 && (
+				<Box>
+					<Typography variant="h6" textAlign="center">
+						You have no posts.
+					</Typography>
+				</Box>
+			)}
 		</Box>
 	);
 };
