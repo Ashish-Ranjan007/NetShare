@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import '@testing-library/jest-dom';
 import { describe, expect, it } from 'vitest';
 import Friends from '..';
 import { store } from '../../../app/store';
@@ -10,9 +11,18 @@ describe('Friends', () => {
 		store.dispatch(
 			setCredentials({
 				id: 'userid',
+				bio: 'bio',
 				email: 'email@email.com',
 				username: 'username',
+				firstname: 'firstname',
+				lastname: 'lastname',
 				profilePic: 'profilePic',
+				postsCount: 0,
+				friendsCount: 0,
+				notifications: 0,
+				followersCount: 0,
+				followingsCount: 0,
+				dateOfBirth: new Date(),
 				recentSearches: [],
 				friends: [
 					{
@@ -30,6 +40,7 @@ describe('Friends', () => {
 				followings: [],
 				accessToken: 'accessToken',
 				isAuthenticated: true,
+				gender: 'Male',
 			})
 		);
 	});

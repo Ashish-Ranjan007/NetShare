@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import '@testing-library/jest-dom';
 import { describe, expect, it } from 'vitest';
 
 import Signup from '..';

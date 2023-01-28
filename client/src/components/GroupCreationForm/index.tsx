@@ -69,13 +69,11 @@ const GroupCreationForm = ({ setOpen }: props) => {
 				dispatch(
 					addChat({
 						...returned.data.groupChat,
-						messages: [],
 					})
 				);
 				dispatch(
 					setCurrentChat({
 						...returned.data.groupChat,
-						messages: [],
 					})
 				);
 			}

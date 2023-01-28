@@ -30,21 +30,36 @@ describe('Searchbar', () => {
 		store.dispatch(
 			setCredentials({
 				id: 'userid',
+				bio: 'bio',
 				email: 'email@email.com',
-				username: 'username123',
+				username: 'username',
+				firstname: 'firstname',
+				lastname: 'lastname',
 				profilePic: 'profilePic',
-				recentSearches: [
+				postsCount: 0,
+				friendsCount: 0,
+				notifications: 0,
+				followersCount: 0,
+				followingsCount: 0,
+				dateOfBirth: new Date(),
+				recentSearches: [],
+				friends: [
 					{
-						id: 'id',
-						username: 'username123',
-						profilePic: 'profilePic',
+						id: 'id1',
+						username: 'username1',
+						profilePic: '',
+					},
+					{
+						id: 'id2',
+						username: 'username2',
+						profilePic: '',
 					},
 				],
-				friends: [],
 				followers: [],
 				followings: [],
 				accessToken: 'accessToken',
 				isAuthenticated: true,
+				gender: 'Male',
 			})
 		);
 
@@ -63,21 +78,36 @@ describe('Searchbar', () => {
 		store.dispatch(
 			setCredentials({
 				id: 'userid',
+				bio: 'bio',
 				email: 'email@email.com',
-				username: 'username123',
+				username: 'username',
+				firstname: 'firstname',
+				lastname: 'lastname',
 				profilePic: 'profilePic',
-				recentSearches: [
+				postsCount: 0,
+				friendsCount: 0,
+				notifications: 0,
+				followersCount: 0,
+				followingsCount: 0,
+				dateOfBirth: new Date(),
+				recentSearches: [],
+				friends: [
 					{
-						id: 'id',
-						username: 'username123',
-						profilePic: 'profilePic',
+						id: 'id1',
+						username: 'username1',
+						profilePic: '',
+					},
+					{
+						id: 'id2',
+						username: 'username2',
+						profilePic: '',
 					},
 				],
-				friends: [],
 				followers: [],
 				followings: [],
 				accessToken: 'accessToken',
 				isAuthenticated: true,
+				gender: 'Male',
 			})
 		);
 
