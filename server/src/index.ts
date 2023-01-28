@@ -29,7 +29,7 @@ const server = http.createServer(app);
 // Initialize socket.io Server instance
 const io = new Server(server, {
 	cors: {
-		origin: 'http://localhost:5173',
+		origin: 'https://netshare.netlify.app',
 	},
 	pingTimeout: 60000,
 });
