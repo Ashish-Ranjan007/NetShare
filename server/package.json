@@ -4,7 +4,8 @@
 	"description": "A social networking project",
 	"main": "index.js",
 	"scripts": {
-		"start": "ts-node-dev src/index.ts",
+		"start": "node dist/index.js",
+		"start-dev": "ts-node-dev src/index.ts",
 		"build": "tsc",
 		"test-dev": "jest --watch",
 		"test": "jest --coverage"
