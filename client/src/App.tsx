@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Box } from '@mui/system';
 import { Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
 
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import IsUserLoggedIn from './components/Auth/IsUserLoggedIn';
@@ -40,6 +41,27 @@ import {
 import EditProfile from './components/Settings/EditProfile';
 import DeleteAccount from './components/Settings/DeleteAccount';
 import ChangePassword from './components/Settings/ChangePassword';
+import { CircularProgress } from '@mui/material';
+
+const Loader: React.FC = () => {
+	return (
+		<Box
+			sx={{
+				width: '100%',
+				height: '100%',
+			}}
+		>
+			<CircularProgress
+				sx={{
+					position: 'absolute',
+					top: '50%',
+					left: '50%',
+					transform: 'translate(-50%, -50%)',
+				}}
+			/>
+		</Box>
+	);
+};
 
 const App: React.FC = () => {
 	const dispatch = useAppDispatch();
@@ -63,7 +85,7 @@ const App: React.FC = () => {
 	}, [data, isSuccess]);
 
 	return (
-		<Suspense fallback={<p>Loading...</p>}>
+		<Suspense fallback={<Loader />}>
 			{auth.isAuthenticated !== null && (
 				<Routes>
 					<Route
