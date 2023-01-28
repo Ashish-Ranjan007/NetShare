@@ -18,7 +18,7 @@ import { useResetUnreadMessagesMutation } from '../../features/chats/chatsApiSli
 import { Typography } from '@mui/material';
 
 let socket: Socket;
-const SERVER_ENDPOINT = 'http://localhost:8000';
+const SERVER_ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 
 const MessageSection = () => {
 	const dispatch = useAppDispatch();

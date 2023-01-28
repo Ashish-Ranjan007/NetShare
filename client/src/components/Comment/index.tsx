@@ -74,7 +74,7 @@ const Comment = ({
 	const fetchMore = async () => {
 		try {
 			const result = await axios.get<ReplyResponseType>(
-				'http://localhost:8000/api/comments/replies',
+				`${import.meta.env.VITE_API_BASE_URL}/api/comments/replies`,
 				{
 					headers: { Authorization: `Bearer ${auth.accessToken}` },
 					params: { commentId: comment._id, page: page },

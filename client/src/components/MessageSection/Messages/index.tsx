@@ -100,7 +100,7 @@ const Messages = ({ socket }: { socket: Socket }) => {
 					messages: MessageType[];
 				};
 				error: string;
-			}>('http://localhost:8000/api/messages/', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/messages/`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { chatId: currentChat._id, page: page.current },
 			});

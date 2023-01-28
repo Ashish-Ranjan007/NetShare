@@ -20,7 +20,7 @@ const FeedSection = () => {
 	const fetchMore = async () => {
 		try {
 			const result = await axios.get(
-				'http://localhost:8000/api/home/feeds/',
+				`${import.meta.env.VITE_API_BASE_URL}/api/home/feeds/`,
 				{
 					headers: {
 						Authorization: `Bearer ${auth.accessToken}`,

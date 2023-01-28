@@ -23,7 +23,7 @@ const ExplorePage = () => {
 				success: boolean;
 				data: { hasPrev: boolean; hasNext: boolean; posts: PostType[] };
 				error: string;
-			}>('http://localhost:8000/api/posts/explore', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/posts/explore`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { page: page },
 			});

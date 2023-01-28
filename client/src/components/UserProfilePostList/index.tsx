@@ -23,7 +23,7 @@ const UserProfilePostList = ({ userId }: { userId: string | undefined }) => {
 				success: boolean;
 				data: { hasPrev: boolean; hasNext: boolean; posts: PostType[] };
 				error: string;
-			}>('http://localhost:8000/api/posts/by-user', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/posts/by-user`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { userId: userId, page: page },
 			});

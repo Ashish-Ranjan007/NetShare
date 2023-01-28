@@ -229,7 +229,9 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 			/>
 
 			<ShareOptionsModal
-				url={`http://localhost:5173/post/${post._id}`}
+				url={`${import.meta.env.VITE_FRONTENT_BASE_URL}/post/${
+					post._id
+				}`}
 				open={openModal}
 				onClose={() => setOpenModal(false)}
 			/>

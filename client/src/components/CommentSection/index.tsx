@@ -49,7 +49,7 @@ const CommentSection = ({ post }: { post: PostType }) => {
 	const fetchMore = async () => {
 		try {
 			const result = await axios.get(
-				'http://localhost:8000/api/posts/comments',
+				`${import.meta.env.VITE_API_BASE_URL}/api/posts/comments`,
 				{
 					headers: { Authorization: `Bearer ${auth.accessToken}` },
 					params: { postId: post._id, page: page },

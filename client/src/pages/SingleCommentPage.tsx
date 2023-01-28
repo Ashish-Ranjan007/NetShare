@@ -30,7 +30,7 @@ const SingleCommentPage = () => {
 					comment: CommentType;
 				};
 				error: string;
-			}>('http://localhost:8000/api/comments/comment', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/comments/comment`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { commentId },
 			});

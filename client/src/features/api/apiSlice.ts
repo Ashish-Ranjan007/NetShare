@@ -14,7 +14,7 @@ import { ResponseType } from '../../@types/responseType';
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
-	baseUrl: 'http://localhost:8000/api',
+	baseUrl: `${import.meta.env.VITE_API_BASE_URL}/api`,
 	prepareHeaders(headers, { getState }) {
 		const token = (getState() as RootState).auth.accessToken;
 

@@ -68,7 +68,7 @@ const EditProfile = () => {
 				data: DataType;
 				error: string;
 			}>(
-				'http://localhost:8000/api/settings/profile',
+				`${import.meta.env.VITE_API_BASE_URL}/api/settings/profile`,
 				{
 					userId: auth.id,
 					profilePic: profilePic,

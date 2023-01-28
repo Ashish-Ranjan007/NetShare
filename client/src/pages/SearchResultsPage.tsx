@@ -20,7 +20,7 @@ const SearchResultsPage = () => {
 	const fetchMore = async () => {
 		try {
 			const result = await axios.get(
-				'http://localhost:8000/api/auth/search/',
+				`${import.meta.env.VITE_API_BASE_URL}/api/auth/search/`,
 				{
 					headers: {
 						Authorization: `Bearer ${auth.accessToken}`,

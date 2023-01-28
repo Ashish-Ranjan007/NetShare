@@ -47,7 +47,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 			const timeOutId = setTimeout(() => {
 				(async () => {
 					const fetchedData = await axios.get(
-						'http://localhost:8000/api/auth/search/',
+						`${import.meta.env.VITE_API_BASE_URL}/api/auth/search/`,
 						{
 							headers: {
 								Authorization: `Bearer ${auth.accessToken}`,
@@ -105,7 +105,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 		// add clicked user to recentSearches in database and then redirect to clicked user's profile
 
 		await axios.post(
-			'http://localhost:8000/api/auth/add-recent-search',
+			`${import.meta.env.VITE_API_BASE_URL}/api/auth/add-recent-search`,
 			{
 				userId: id,
 			},

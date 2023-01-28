@@ -36,7 +36,9 @@ const ChangePassword = () => {
 	const onSubmit = async (values: FormValues) => {
 		try {
 			await axios.post<ResponseType>(
-				'http://localhost:8000/api/settings/change-password',
+				`${
+					import.meta.env.VITE_API_BASE_URL
+				}/api/settings/change-password`,
 				{
 					userId: auth.id,
 					oldPassword: values.oldPassword,

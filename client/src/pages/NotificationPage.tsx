@@ -51,7 +51,7 @@ const NotificationPage = () => {
 					notifications: NotificationType[];
 				};
 				error: string;
-			}>('http://localhost:8000/api/notifications', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/notifications`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { page: page },
 			});
@@ -75,7 +75,9 @@ const NotificationPage = () => {
 		if (notifications.length >= auth.notifications) {
 			(async () => {
 				const result = await axios.post(
-					'http://localhost:8000/api/notifications/clear-all',
+					`${
+						import.meta.env.VITE_API_BASE_URL
+					}/api/notifications/clear-all`,
 					{},
 					{ headers: { Authorization: `Bearer ${auth.accessToken}` } }
 				);

@@ -38,7 +38,7 @@ const Chats = () => {
 				success: boolean;
 				data: { hasPrev: boolean; hasNext: boolean; chats: ChatType[] };
 				error: string;
-			}>('http://localhost:8000/api/chats/', {
+			}>(`${import.meta.env.VITE_API_BASE_URL}/api/chats/`, {
 				headers: { Authorization: `Bearer ${auth.accessToken}` },
 				params: { page: page },
 			});

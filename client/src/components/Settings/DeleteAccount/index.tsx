@@ -38,7 +38,9 @@ const DeleteAccount = () => {
 
 		try {
 			await axios.delete(
-				'http://localhost:8000/api/settings/delete-account',
+				`${
+					import.meta.env.VITE_API_BASE_URL
+				}/api/settings/delete-account`,
 				{
 					headers: { Authorization: `Bearer ${auth.accessToken}` },
 					data: { userId: auth.id, password: values.password },
