@@ -24,26 +24,11 @@ afterEach(() => {
 });
 
 describe('Edit Profile', () => {
-	it('should be provided with an userId', async () => {
-		mockRequest.body = {
-			profilePic: 'profilePic',
-			firstname: 'firstname',
-			lastname: 'lastname',
-			bio: 'bio',
-			dateOfBirth: 'dateOfBirth',
-			gender: 'male',
-		};
-
-		await editProfile(mockRequest, mockResponse, mockNext);
-
-		expect(mockNext).toHaveBeenCalledWith(
-			new ErrorHandler('No userId is provided', 400)
-		);
-	});
-
 	it('should call next if user is invalid', async () => {
+		mockRequest.user = {
+			_id: '_id',
+		};
 		mockRequest.body = {
-			userId: 'userId',
 			profilePic: 'profilePic',
 			firstname: 'firstname',
 			lastname: 'lastname',
@@ -52,18 +37,21 @@ describe('Edit Profile', () => {
 			gender: 'male',
 		};
 
-		User.findById = jest.fn().mockResolvedValueOnce(false);
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce(false),
+		}));
 
 		await editProfile(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
-			new ErrorHandler('Invalid userId', 400)
+			new ErrorHandler('Invalid user', 400)
 		);
 	});
 
 	it('should return a status of 200', async () => {
+		mockRequest.user = {
+			_id: '_id',
+		};
 		mockRequest.body = {
-			userId: 'userId',
 			profilePic: 'profilePic',
 			firstname: 'firstname',
 			lastname: 'lastname',
@@ -73,9 +61,11 @@ describe('Edit Profile', () => {
 		};
 		const mockResponse: any = { status: jest.fn() };
 
-		User.findById = jest.fn().mockResolvedValueOnce({
-			save: jest.fn(),
-		});
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce({
+				save: jest.fn(),
+			}),
+		}));
 
 		await editProfile(mockRequest, mockResponse, mockNext);
 

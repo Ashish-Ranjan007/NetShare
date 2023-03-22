@@ -1,19 +1,13 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import { Comment } from './Comment.model';
-
-type ProfileReference = {
-	id: string;
-	profilePic: string;
-	username: string;
-};
 
 // Document Interface
 interface IPost {
-	createdBy: ProfileReference;
+	createdBy: Types.ObjectId;
 	createdAt: Date;
 	likes: number;
-	likedBy: string[];
-	comments: string[];
+	likedBy: Types.ObjectId[];
+	comments: Types.ObjectId[];
 	commentsCount: number;
 	contents: {
 		public_id: string;
@@ -29,7 +23,8 @@ const PostSchema = new Schema<IPost>({
 		default: () => new Date(),
 	},
 	createdBy: {
-		type: { id: String, profilePic: String, username: String },
+		type: Schema.Types.ObjectId,
+		ref: 'User',
 		required: [true, 'Please provide the user id of the creator'],
 	},
 	likes: {
@@ -37,11 +32,11 @@ const PostSchema = new Schema<IPost>({
 		default: 0,
 	},
 	likedBy: {
-		type: [String],
+		type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 		default: [],
 	},
 	comments: {
-		type: [String],
+		type: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
 		default: [],
 	},
 	commentsCount: {

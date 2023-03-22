@@ -52,7 +52,7 @@ describe('Integration test for suggested profiles route', () => {
 			data: {
 				suggestedProfiles: [
 					{
-						id: 'profileId',
+						_id: 'profileId',
 						username: 'profile',
 						profilePic: 'profilePic',
 					},
@@ -65,6 +65,7 @@ describe('Integration test for suggested profiles route', () => {
 
 describe('Integration test for birthdays route', () => {
 	it('GET /api/widgets/birthdays - success - get all friends having birthday today', async () => {
+		const newDate = new Date().toISOString();
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
@@ -73,21 +74,20 @@ describe('Integration test for birthdays route', () => {
 				username: 'username',
 				profilePic: 'profilePic',
 			})
-			.mockResolvedValueOnce({
-				friends: [
-					{
-						id: 'friendId',
-						username: 'friend',
-						profilePic: 'profilePic',
-					},
-				],
-			})
-			.mockResolvedValueOnce({
-				_id: 'friendId',
-				username: 'friend',
-				profilePic: 'profilePic',
-				dateOfBirth: new Date().toISOString(),
-			});
+			.mockImplementationOnce(() => ({
+				select: jest.fn().mockImplementationOnce(() => ({
+					populate: jest.fn().mockImplementationOnce(() => ({
+						then: jest.fn().mockResolvedValueOnce([
+							{
+								_id: 'friendId',
+								username: 'friend',
+								profilePic: 'profilePic',
+								dateOfBirth: newDate,
+							},
+						]),
+					})),
+				})),
+			}));
 
 		const response = await request(app)
 			.get('/api/widgets/birthdays')
@@ -99,9 +99,10 @@ describe('Integration test for birthdays route', () => {
 			data: {
 				friends: [
 					{
-						id: 'friendId',
+						_id: 'friendId',
 						username: 'friend',
 						profilePic: 'profilePic',
+						dateOfBirth: newDate,
 					},
 				],
 			},

@@ -32,32 +32,27 @@ describe('Get Suggested Profile', () => {
 				},
 			]),
 		}));
-
 		await getSuggestProfiles(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
 
 describe('Get Birthdays', () => {
 	it('should return friends who have birthday today', async () => {
-		User.findById = jest
-			.fn()
-			.mockResolvedValueOnce({
-				friends: [
-					{
-						id: 'friendId',
-						username: 'friend',
-						profilePic: 'profilePic',
-					},
-				],
-			})
-			.mockResolvedValueOnce({
-				_id: 'friendId',
-				username: 'friend',
-				profilePic: 'profilePic',
-				dateOfBirth: new Date(),
-			});
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockImplementationOnce(() => ({
+					then: jest.fn().mockResolvedValueOnce([
+						{
+							_id: 'friendId',
+							username: 'friend',
+							profilePic: 'profilePic',
+							dateOfBirth: new Date(),
+						},
+					]),
+				})),
+			})),
+		}));
 
 		await getBirthdays(mockRequest, mockResponse, mockNext);
 

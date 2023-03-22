@@ -1,31 +1,26 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 
 import { Post } from './Post.model';
 import { Comment } from './Comment.model';
 
-type ProfileReference = {
-	id: string;
-	profilePic: string;
-	username: string;
-};
-
 export interface IReply {
-	commentId: string;
+	commentId: Types.ObjectId;
 	repliedTo: {
 		replyId: string | null;
 		username: string | null;
 	};
-	createdBy: ProfileReference;
+	createdBy: Types.ObjectId;
 	createdAt: Date;
 	likes: number;
-	likedBy: string[];
+	likedBy: Types.ObjectId[];
 	content: string;
 	updatedAt: Date | null;
 }
 
 const ReplySchema = new Schema<IReply>({
 	commentId: {
-		type: String,
+		type: Schema.Types.ObjectId,
+		ref: 'Comment',
 		required: true,
 	},
 	repliedTo: {
@@ -33,7 +28,8 @@ const ReplySchema = new Schema<IReply>({
 		default: { replyId: null, username: null },
 	},
 	createdBy: {
-		type: { id: String, profilePic: String, username: String },
+		type: Schema.Types.ObjectId,
+		ref: 'User',
 		required: [true, 'Please provide the user id of the creator'],
 	},
 	createdAt: {
@@ -45,7 +41,7 @@ const ReplySchema = new Schema<IReply>({
 		default: 0,
 	},
 	likedBy: {
-		type: [String],
+		type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 		default: [],
 	},
 	content: {
@@ -65,7 +61,7 @@ ReplySchema.pre('remove', async function (next) {
 	if (comment && post) {
 		// remove replyId from replies field of comment
 		comment.replies = comment.replies.filter(
-			(replyId) => replyId !== this._id.toString()
+			(replyId) => replyId.toString() !== this._id.toString()
 		);
 
 		// decrement repliesCount of comment

@@ -25,7 +25,7 @@ export const fetchMessages = catchAsyncErrors(
 
 		// Only members are authorized for this operation
 		const isMember = chat.members.find(
-			(member) => member.id === req.user._id.toString()
+			(member) => member.toString() === req.user._id.toString()
 		);
 		if (!isMember) {
 			return next(
@@ -80,7 +80,7 @@ export const deleteMessage = catchAsyncErrors(
 		}
 
 		// Only creator can delete a message
-		if (message.sender !== req.user._id.toString()) {
+		if (message.sender.toString() !== req.user._id.toString()) {
 			return next(
 				new ErrorHandler(
 					'Only creator of a message is authorized to delete it',

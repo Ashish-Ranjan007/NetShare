@@ -109,6 +109,7 @@ describe('Login an existing user', () => {
 	it('should call sendToken if isMatched is true', async () => {
 		const mockedUserInstance = {
 			matchPasswords: () => true,
+			populate: jest.fn().mockResolvedValueOnce({}),
 		};
 
 		User.findOne = jest.fn().mockImplementationOnce(() => ({
@@ -172,6 +173,7 @@ describe('Refresh token', () => {
 
 		User.findOne = jest.fn().mockResolvedValueOnce({
 			getSignedToken: jest.fn().mockResolvedValueOnce('token'),
+			populate: jest.fn().mockResolvedValueOnce({}),
 		});
 
 		(VerifyJWT.verifyJWT as any) = jest.fn().mockReturnValueOnce({
@@ -259,7 +261,7 @@ describe('Add recently searched user to recentSearches field', () => {
 				_id: 'userid',
 			})
 			.mockResolvedValueOnce({
-				recentSearches: [{ id: 'userid' }],
+				recentSearches: ['userid'],
 			});
 
 		await postAddRecentSearch(
@@ -329,11 +331,7 @@ describe('Follow', () => {
 			.fn()
 			.mockResolvedValueOnce({
 				_id: 'userid',
-				followings: [
-					{
-						id: '_id',
-					},
-				],
+				followings: ['_id'],
 			})
 			.mockResolvedValueOnce({
 				_id: '_id',
@@ -418,9 +416,7 @@ describe('UnFollow', () => {
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
-				followings: [
-					{ id: 'id', profilePic: '', username: 'username' },
-				],
+				followings: ['id'],
 			})
 			.mockResolvedValueOnce({
 				_id: '_id',
@@ -446,9 +442,7 @@ describe('UnFollow', () => {
 			.mockResolvedValueOnce({
 				_id: 'id',
 				friends: [],
-				followings: [
-					{ id: 'targetid', profilePic: '', username: 'username' },
-				],
+				followings: ['targetid'],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
@@ -456,9 +450,7 @@ describe('UnFollow', () => {
 				profilePic: '',
 				username: 'username',
 				friends: [],
-				followers: [
-					{ id: 'userid', profilePic: '', username: 'username' },
-				],
+				followers: ['userid'],
 				save: jest.fn(),
 			});
 
@@ -477,8 +469,10 @@ describe('getFollowers', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			followers: [],
-			followersCount: 0,
+			populate: jest.fn().mockResolvedValueOnce({
+				followers: [],
+				followersCount: 0,
+			}),
 		}));
 
 		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
@@ -493,8 +487,10 @@ describe('getFollowers', () => {
 		mockRequest.query = { userId: 'username' };
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			followers: [],
-			followersCount: 0,
+			populate: jest.fn().mockResolvedValueOnce({
+				followers: [],
+				followersCount: 0,
+			}),
 		}));
 
 		await getFollowers(mockRequest, newMockResponse as Response, mockNext);
@@ -511,8 +507,10 @@ describe('getFollowings', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			followings: [],
-			followingsCount: 0,
+			populate: jest.fn().mockResolvedValueOnce({
+				followings: [],
+				followingsCount: 0,
+			}),
 		}));
 
 		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
@@ -527,8 +525,10 @@ describe('getFollowings', () => {
 		mockRequest.query = { userId: 'userId' };
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			followings: [],
-			followingsCount: 0,
+			populate: jest.fn().mockResolvedValueOnce({
+				followings: [],
+				followingsCount: 0,
+			}),
 		}));
 
 		await getFollowings(mockRequest, newMockResponse as Response, mockNext);
@@ -545,7 +545,9 @@ describe('getFriends', () => {
 		};
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
-			select: jest.fn().mockResolvedValueOnce({ friends: [] }),
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({ friends: [] }),
+			})),
 		}));
 
 		await getFriends(mockRequest, newMockResponse as Response, mockNext);
@@ -559,8 +561,18 @@ describe('getFriends', () => {
 		};
 		mockRequest.query = { searchTerm: 'username' };
 
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: jest.fn().mockResolvedValueOnce([]),
+		User.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					friends: [
+						{
+							_id: 'id',
+							username: 'username',
+							profilePic: 'profilePic',
+						},
+					],
+				}),
+			})),
 		}));
 
 		await getFriends(mockRequest, newMockResponse as Response, mockNext);

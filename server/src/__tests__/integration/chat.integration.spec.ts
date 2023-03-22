@@ -9,6 +9,24 @@ import * as VerifyToken from '../../utils/verifyJWT';
 jest.mock('../../utils/verifyJWT');
 jest.mock('../../models/User.model');
 jest.mock('../../models/Chat.model');
+function populateMemberAndAdmin(this: any) {
+	return jest.fn().mockImplementationOnce(function (this: any) {
+		this.admins = this.admins.map((admin: any) => {
+			return {
+				_id: admin,
+				username: 'username',
+				profilePic: 'profilePic',
+			};
+		});
+		this.members = this.members.map((member: any) => {
+			return {
+				_id: member,
+				username: 'username',
+				profilePic: 'profilePic',
+			};
+		});
+	});
+}
 
 // Setup to Authenticate request of every test
 beforeEach(() => {
@@ -35,10 +53,12 @@ describe('Integration tests for fetching chats of an user route', () => {
 	it('GET /api/chats/ - success - fetch all chats user is involved in', async () => {
 		Chat.count = jest.fn().mockResolvedValueOnce(0);
 		Chat.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						populate: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							populate: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			})),
@@ -47,7 +67,6 @@ describe('Integration tests for fetching chats of an user route', () => {
 		const response = await request(app)
 			.get('/api/chats')
 			.set('Authorization', 'Bearer Token');
-
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
@@ -75,16 +94,22 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 				_id: '_id',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: 'userId',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['userId'],
 			});
-		Chat.find = jest.fn().mockResolvedValueOnce([]);
-		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
+		Chat.find = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce([]),
+		}));
+		Chat.create = jest.fn().mockImplementationOnce((arg: any) => ({
+			...arg,
+			members: arg.members.map((member: any) => {
+				return {
+					_id: member,
+					username: 'username',
+					profilePic: 'profilePic',
+				};
+			}),
+			populate: jest.fn(),
+		}));
 
 		const response = await request(app)
 			.post('/api/chats/create-chat')
@@ -100,12 +125,12 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 					name: 'direct message',
 					members: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							profilePic: 'profilePic',
 							username: 'username',
 						},
 						{
-							id: '_id',
+							_id: '_id',
 							profilePic: 'profilePic',
 							username: 'username',
 						},
@@ -139,15 +164,11 @@ describe('Integration tests for creating a peer-to-peer chat route', () => {
 				_id: '_id',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: 'userId',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['userId'],
 			});
-		Chat.find = jest.fn().mockResolvedValueOnce([{}]);
+		Chat.find = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce([{}]),
+		}));
 		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
 
 		const response = await request(app)
@@ -246,27 +267,37 @@ describe('Integration tests for creating a group chat route', () => {
 				_id: '63a29bb60eeb6c7e7e415c48',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: '63a29bb60eeb6c7e7e415c42',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['63a29bb60eeb6c7e7e415c42'],
 			})
 			.mockResolvedValueOnce({
 				_id: '63a29bb60eeb6c7e7e415c49',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: '63a29bb60eeb6c7e7e415c42',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['63a29bb60eeb6c7e7e415c42'],
 			});
-		Chat.create = jest.fn().mockImplementationOnce((arg) => arg);
+		Chat.create = jest.fn().mockImplementationOnce((arg) => ({
+			...arg,
+			members: arg.members.map((member: any) => {
+				return {
+					_id: member,
+					username: 'username',
+					profilePic: 'profilePic',
+				};
+			}),
+			createdBy: {
+				_id: arg.createdBy,
+				username: 'username',
+				profilePic: 'profilePic',
+			},
+			admins: arg.admins.map((admin: any) => {
+				return {
+					_id: admin,
+					username: 'username',
+					profilePic: 'profilePic',
+				};
+			}),
+			populate: jest.fn(),
+		}));
 
 		const response = await request(app)
 			.post('/api/chats/create-group-chat')
@@ -289,29 +320,29 @@ describe('Integration tests for creating a group chat route', () => {
 					name: 'Test-Group',
 					members: [
 						{
-							id: '63a29bb60eeb6c7e7e415c48',
+							_id: '63a29bb60eeb6c7e7e415c48',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: '63a29bb60eeb6c7e7e415c49',
+							_id: '63a29bb60eeb6c7e7e415c49',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: '63a29bb60eeb6c7e7e415c42',
+							_id: '63a29bb60eeb6c7e7e415c42',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					createdBy: {
-						id: '63a29bb60eeb6c7e7e415c42',
+						_id: '63a29bb60eeb6c7e7e415c42',
 						username: 'username',
 						profilePic: 'profilePic',
 					},
 					admins: [
 						{
-							id: '63a29bb60eeb6c7e7e415c42',
+							_id: '63a29bb60eeb6c7e7e415c42',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -378,13 +409,7 @@ describe('Integration tests for creating a group chat route', () => {
 				_id: 'userId1',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: 'userId',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['userId'],
 			})
 			.mockResolvedValueOnce({
 				_id: 'userId2',
@@ -410,18 +435,20 @@ describe('Integration tests for creating a group chat route', () => {
 
 describe('Integration tests for renaming a group chat route', () => {
 	it('POST /api/chats/rename-group - success - rename the provided group', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			name: 'Test Group',
-			save: jest.fn(),
-		});
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce({
+				isGroup: true,
+				admins: [
+					{
+						_id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
+				name: 'Test Group',
+				save: jest.fn(),
+			}),
+		}));
 
 		const response = await request(app)
 			.post('/api/chats/rename-group')
@@ -436,7 +463,7 @@ describe('Integration tests for renaming a group chat route', () => {
 					isGroup: true,
 					admins: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -460,7 +487,9 @@ describe('Integration tests for renaming a group chat route', () => {
 	});
 
 	it('POST /api/chats/rename-group - failure if provided chatId is invalid', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce(null);
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce(null),
+		}));
 
 		const response = await request(app)
 			.post('/api/chats/rename-group')
@@ -472,12 +501,14 @@ describe('Integration tests for renaming a group chat route', () => {
 	});
 
 	it('POST /api/chats/rename-group - failure if current user is not an admin', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [],
-			name: 'Test Group',
-			save: jest.fn(),
-		});
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce({
+				isGroup: true,
+				admins: [],
+				name: 'Test Group',
+				save: jest.fn(),
+			}),
+		}));
 
 		const response = await request(app)
 			.post('/api/chats/rename-group')
@@ -504,32 +535,17 @@ describe('Integration tests for adding a new member to group chat route', () => 
 				_id: 'userId',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: 'currentUserId',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['currentUserId'],
 			});
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			unreadMessages: [],
-			save: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['currentUserId'],
+				members: ['currentUserId'],
+				unreadMessages: [],
+				save: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -545,19 +561,19 @@ describe('Integration tests for adding a new member to group chat route', () => 
 					isGroup: true,
 					admins: [
 						{
-							id: 'currentUserId',
+							_id: 'currentUserId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'currentUserId',
+							_id: 'currentUserId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -652,20 +668,8 @@ describe('Integration tests for adding a new member to group chat route', () => 
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['currentUserId'],
+			members: ['currentUserId'],
 			save: jest.fn(),
 		});
 
@@ -690,35 +694,12 @@ describe('Integration tests for adding a new member to group chat route', () => 
 				_id: 'userId',
 				username: 'username',
 				profilePic: 'profilePic',
-				friends: [
-					{
-						id: 'currentUserId',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-				],
+				friends: ['currentUserId'],
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['currentUserId'],
+			members: ['currentUserId', 'userId'],
 			save: jest.fn(),
 		});
 
@@ -734,32 +715,18 @@ describe('Integration tests for adding a new member to group chat route', () => 
 
 describe('Integration tests for removing a member from group chat route', () => {
 	it('POST /api/chats/remove-member - success - remove the member from the group', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			unreadMessages: [
-				{ userId: 'userId', newMessages: 0 },
-				{ userId: 'memberId', newMessages: 0 },
-			],
-			save: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['userId'],
+				members: ['userId', 'memberId'],
+				unreadMessages: [
+					{ userId: 'userId', newMessages: 0 },
+					{ userId: 'memberId', newMessages: 0 },
+				],
+				save: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -775,14 +742,14 @@ describe('Integration tests for removing a member from group chat route', () => 
 					isGroup: true,
 					admins: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -797,20 +764,8 @@ describe('Integration tests for removing a member from group chat route', () => 
 	it('POST /api/chats/remove-member - success - delete the groupChat if no users are remaining after removal', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId'],
 			unreadMessages: [{ userId: 'id', newMessages: 0 }],
 			save: jest.fn(),
 			delete: jest.fn(),
@@ -830,33 +785,19 @@ describe('Integration tests for removing a member from group chat route', () => 
 	});
 
 	it('POST /api/chats/remove-member - success - make a member admin if no admins are remaining after removal', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			unreadMessages: [
-				{ userId: 'userId', newMessages: 0 },
-				{ userId: 'memberId', newMessages: 0 },
-			],
-			save: jest.fn(),
-			delete: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['userId'],
+				members: ['userId', 'memberId'],
+				unreadMessages: [
+					{ userId: 'userId', newMessages: 0 },
+					{ userId: 'memberId', newMessages: 0 },
+				],
+				save: jest.fn(),
+				delete: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -872,14 +813,14 @@ describe('Integration tests for removing a member from group chat route', () => 
 					isGroup: true,
 					admins: [
 						{
-							id: 'memberId',
+							_id: 'memberId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'memberId',
+							_id: 'memberId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -933,30 +874,8 @@ describe('Integration tests for removing a member from group chat route', () => 
 	it('POST /api/chats/remove-member - failure if provided member is an admin but is not the current user', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId', 'memberId'],
+			members: ['userId', 'memberId'],
 		});
 
 		const response = await request(app)
@@ -983,28 +902,14 @@ describe('Integration tests for making a member admin route', () => {
 				username: 'username',
 				profilePic: 'profilePic',
 			});
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			save: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['currentUserId'],
+				members: ['currentUserId', 'userId'],
+				save: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -1020,24 +925,24 @@ describe('Integration tests for making a member admin route', () => {
 					isGroup: true,
 					admins: [
 						{
-							id: 'currentUserId',
+							_id: 'currentUserId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'currentUserId',
+							_id: 'currentUserId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -1124,20 +1029,8 @@ describe('Integration tests for making a member admin route', () => {
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['currentUserId'],
+			members: ['currentUserId'],
 		});
 
 		const response = await request(app)
@@ -1166,30 +1059,8 @@ describe('Integration tests for making a member admin route', () => {
 			});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'currentUserId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['currentUserId', 'userId'],
+			members: ['currentUserId', 'userId'],
 		});
 
 		const response = await request(app)
@@ -1204,33 +1075,14 @@ describe('Integration tests for making a member admin route', () => {
 
 describe('Integration tests for removing a member from admin route', () => {
 	it('POST /api/chats/remove-admin - success - remove an admin', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'adminId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'adminId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			save: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['userId', 'adminId'],
+				members: ['userId', 'adminId'],
+				save: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -1246,19 +1098,19 @@ describe('Integration tests for removing a member from admin route', () => {
 					isGroup: true,
 					admins: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'adminId',
+							_id: 'adminId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -1270,28 +1122,14 @@ describe('Integration tests for removing a member from admin route', () => {
 	});
 
 	it('POST /api/chats/remove-admin - success - make a member admin if the admins array is emptied from removal', async () => {
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'adminId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			save: jest.fn(),
+		Chat.findById = jest.fn().mockImplementationOnce(function () {
+			return {
+				isGroup: true,
+				admins: ['userId'],
+				members: ['userId', 'adminId'],
+				save: jest.fn(),
+				populate: populateMemberAndAdmin(),
+			};
 		});
 
 		const response = await request(app)
@@ -1307,19 +1145,19 @@ describe('Integration tests for removing a member from admin route', () => {
 					isGroup: true,
 					admins: [
 						{
-							id: 'adminId',
+							_id: 'adminId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
 					members: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 						{
-							id: 'adminId',
+							_id: 'adminId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
@@ -1373,15 +1211,11 @@ describe('Integration tests for setting a display picture route', () => {
 	it('POST /api/chats/set-display-picture - success - set display picture of the group', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: [],
 			displayPicture: '',
 			save: jest.fn(),
+			populate: populateMemberAndAdmin(),
 		});
 
 		const response = await request(app)
@@ -1397,11 +1231,12 @@ describe('Integration tests for setting a display picture route', () => {
 					isGroup: true,
 					admins: [
 						{
-							id: 'userId',
+							_id: 'userId',
 							username: 'username',
 							profilePic: 'profilePic',
 						},
 					],
+					members: [],
 					displayPicture: 'displayPictureUrl',
 				},
 			},
@@ -1454,13 +1289,7 @@ describe('Integration tests for deleting a peer-to-peer chat route', () => {
 	it('DELETE /api/chats/delete-chat - success - delete the direct message chat', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			delete: jest.fn(),
 		});
 
@@ -1511,13 +1340,7 @@ describe('Integration tests for deleting a group chat route', () => {
 	it('DELETE /api/chats/delete-group-chat - success - delete the direct message chat', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			delete: jest.fn(),
 		});
 

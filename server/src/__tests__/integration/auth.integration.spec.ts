@@ -129,6 +129,7 @@ describe('Integration tests for the login auth route', () => {
 			email: 'email',
 			username: 'username',
 			matchPasswords: () => true,
+			populate: jest.fn().mockResolvedValueOnce({}),
 		};
 
 		User.findOne = jest.fn().mockImplementationOnce(() => ({
@@ -227,7 +228,7 @@ describe('Integration tests for the logout auth route', () => {
 
 describe('Integration tests for the refresh-token route', () => {
 	it('GET /api/auth/refresh-token - success - create and send a new accessToken', async () => {
-		User.findOne = jest.fn().mockResolvedValueOnce({
+		User.findOne = jest.fn().mockImplementationOnce(() => ({
 			_id: 'userid',
 			email: 'email',
 			username: 'username',
@@ -244,7 +245,8 @@ describe('Integration tests for the refresh-token route', () => {
 			getSignedToken: jest.fn().mockImplementationOnce(() => {
 				return 'accessToken';
 			}),
-		});
+			populate: jest.fn().mockResolvedValueOnce({}),
+		}));
 
 		(VerifyToken.verifyJWT as any) = jest.fn().mockReturnValueOnce({
 			payload: { _id: '_id' },
@@ -260,7 +262,7 @@ describe('Integration tests for the refresh-token route', () => {
 			success: true,
 			data: {
 				userObj: {
-					id: 'userid',
+					_id: 'userid',
 					email: 'email',
 					username: 'username',
 					profilePic: 'profilePic',
@@ -413,7 +415,7 @@ describe('Integration tests for add-recent-search route', () => {
 			_id: 'userid',
 			profilePic: 'profilePic',
 			username: 'username',
-			recentSearches: [{ id: 'userId' }],
+			recentSearches: ['userId'],
 			save: jest.fn(),
 		});
 
@@ -453,7 +455,7 @@ describe('Integration tests for add-recent-search route', () => {
 			_id: 'userid',
 			profilePic: 'profilePic',
 			username: 'username',
-			recentSearches: [{ id: 'userid' }],
+			recentSearches: ['userid'],
 			save: jest.fn(),
 		});
 
@@ -479,13 +481,7 @@ describe('Integration tests for follow route', () => {
 			.mockResolvedValueOnce({
 				_id: 'userid',
 				friends: [],
-				followings: [
-					{
-						id: 'id',
-						username: 'username',
-						profilePic: '',
-					},
-				],
+				followings: ['id'],
 				username: 'user',
 				profilePic: 'profilePic',
 				followers: [],
@@ -547,13 +543,7 @@ describe('Integration tests for follow route', () => {
 			.fn()
 			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
-				followings: [
-					{
-						id: '_id',
-						username: 'username',
-						profilePic: '',
-					},
-				],
+				followings: ['_id'],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
@@ -584,22 +574,14 @@ describe('Integration tests for unfollow route', () => {
 			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
 				_id: 'userId',
-				followings: [
-					{
-						id: 'targetid',
-						username: 'username123',
-						profilePic: 'profilePic123',
-					},
-				],
+				followings: ['targetid'],
 				friends: [],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
 				_id: 'targetid',
 				username: 'username123',
-				followers: [
-					{ id: 'userid', profilePic: '', username: 'username' },
-				],
+				followers: ['userid'],
 				friends: [],
 				profilePic: 'profilePic123',
 				save: jest.fn(),
@@ -622,13 +604,7 @@ describe('Integration tests for unfollow route', () => {
 			.fn()
 			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
-				followings: [
-					{
-						id: 'targetid',
-						username: 'username123',
-						profilePic: 'profilePic123',
-					},
-				],
+				followings: ['targetid'],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce(false);
@@ -650,21 +626,13 @@ describe('Integration tests for unfollow route', () => {
 			.fn()
 			.mockResolvedValueOnce({ _id: 'userid' })
 			.mockResolvedValueOnce({
-				followings: [
-					{
-						id: 'targetid',
-						username: 'username123',
-						profilePic: 'profilePic123',
-					},
-				],
+				followings: ['targetid'],
 				save: jest.fn(),
 			})
 			.mockResolvedValueOnce({
 				_id: 'id',
 				username: 'username123',
-				followers: [
-					{ id: 'userid', profilePic: '', username: 'username' },
-				],
+				followers: ['userid'],
 				profilePic: 'profilePic123',
 				save: jest.fn(),
 			});
@@ -685,14 +653,16 @@ describe('Integration tests for getFollowers route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				followers: [
-					{
-						id: 'id',
-						profilePic: 'profilePic',
-						username: 'username',
-					},
-				],
-				followersCount: 0,
+				populate: jest.fn().mockResolvedValueOnce({
+					followers: [
+						{
+							_id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+					followersCount: 0,
+				}),
 			}));
 
 		const response = await request(app)
@@ -707,7 +677,7 @@ describe('Integration tests for getFollowers route', () => {
 				hasNext: false,
 				followers: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
 						username: 'username',
 					},
@@ -722,14 +692,16 @@ describe('Integration tests for getFollowers route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				followers: [
-					{
-						id: 'id',
-						profilePic: 'profilePic',
-						username: 'username',
-					},
-				],
-				followersCount: 0,
+				populate: jest.fn().mockResolvedValueOnce({
+					followers: [
+						{
+							_id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+					followersCount: 0,
+				}),
 			}));
 
 		const response = await request(app)
@@ -744,7 +716,7 @@ describe('Integration tests for getFollowers route', () => {
 				hasNext: false,
 				followers: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
 						username: 'username',
 					},
@@ -761,13 +733,15 @@ describe('Integration tests for getFollowings route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				followings: [
-					{
-						id: 'id',
-						profilePic: 'profilePic',
-						username: 'username',
-					},
-				],
+				populate: jest.fn().mockResolvedValueOnce({
+					followings: [
+						{
+							_id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				}),
 			}));
 
 		const response = await request(app)
@@ -782,7 +756,7 @@ describe('Integration tests for getFollowings route', () => {
 				hasNext: false,
 				followings: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
 						username: 'username',
 					},
@@ -797,13 +771,15 @@ describe('Integration tests for getFollowings route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				followings: [
-					{
-						id: 'id',
-						profilePic: 'profilePic',
-						username: 'username',
-					},
-				],
+				populate: jest.fn().mockResolvedValueOnce({
+					followings: [
+						{
+							_id: 'id',
+							profilePic: 'profilePic',
+							username: 'username',
+						},
+					],
+				}),
 			}));
 
 		const response = await request(app)
@@ -818,7 +794,7 @@ describe('Integration tests for getFollowings route', () => {
 				hasNext: false,
 				followings: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
 						username: 'username',
 					},
@@ -835,15 +811,17 @@ describe('Integration tests for getFriends route', () => {
 			.fn()
 			.mockImplementationOnce(() => ({ _id: 'userid123' }))
 			.mockImplementationOnce(() => ({
-				select: () => ({
-					friends: [
-						{
-							id: 'id',
-							profilePic: 'profilePic',
-							username: 'username',
-						},
-					],
-				}),
+				select: jest.fn().mockImplementationOnce(() => ({
+					populate: jest.fn().mockResolvedValueOnce({
+						friends: [
+							{
+								_id: 'id',
+								profilePic: 'profilePic',
+								username: 'username',
+							},
+						],
+					}),
+				})),
 			}));
 
 		const response = await request(app)
@@ -856,7 +834,7 @@ describe('Integration tests for getFriends route', () => {
 			data: {
 				results: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
 						username: 'username',
 					},
@@ -867,15 +845,22 @@ describe('Integration tests for getFriends route', () => {
 	});
 
 	it('POST /api/auth/friends - success - if searchTerm exists return friends that match searchTerm', async () => {
-		User.find = jest.fn().mockImplementationOnce(() => ({
-			then: () => [
-				{
-					id: 'id',
-					profilePic: 'profilePic',
-					username: 'username',
-				},
-			],
-		}));
+		User.findById = jest
+			.fn()
+			.mockImplementationOnce(() => ({ _id: 'userid123' }))
+			.mockImplementationOnce(() => ({
+				select: jest.fn().mockImplementationOnce(() => ({
+					populate: jest.fn().mockResolvedValueOnce({
+						friends: [
+							{
+								_id: 'id',
+								username: 'username123',
+								profilePic: 'profilePic',
+							},
+						],
+					}),
+				})),
+			}));
 
 		const response = await request(app)
 			.get('/api/auth/friends/?searchTerm=username123')
@@ -887,9 +872,9 @@ describe('Integration tests for getFriends route', () => {
 			data: {
 				results: [
 					{
-						id: 'id',
+						_id: 'id',
 						profilePic: 'profilePic',
-						username: 'username',
+						username: 'username123',
 					},
 				],
 			},

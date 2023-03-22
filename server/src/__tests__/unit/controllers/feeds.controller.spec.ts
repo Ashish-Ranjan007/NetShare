@@ -26,7 +26,6 @@ describe('Get feeds', () => {
 		}));
 
 		await getFeeds(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Bad request', 404)
 		);
@@ -41,10 +40,12 @@ describe('Get feeds', () => {
 			}),
 		}));
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							lean: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			})),

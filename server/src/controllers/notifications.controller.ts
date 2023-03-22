@@ -9,6 +9,10 @@ export const getNotifications = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		let notifications = await User.findById(req.user._id)
 			.select('notifications')
+			.populate({
+				path: 'notifications',
+				populate: { path: 'user', select: '_id username profilePic' },
+			})
 			.sort({ _id: -1 })
 			.then((user) => user?.notifications);
 
@@ -52,6 +56,10 @@ export const getNotificationHistory = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		let notifications = await User.findById({ _id: req.user._id })
 			.select('notificationHistory')
+			.populate({
+				path: 'notifications',
+				populate: { path: 'user', select: '_id username profilePic' },
+			})
 			.sort({ _id: -1 })
 			.then((user) => user?.notificationHistory);
 

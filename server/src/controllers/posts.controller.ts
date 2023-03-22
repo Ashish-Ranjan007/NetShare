@@ -17,11 +17,7 @@ export const createPost = catchAsyncErrors(
 
 		// Create post
 		const post = await Post.create({
-			createdBy: {
-				id: req.user._id.toString(),
-				profilePic: req.user.profilePic,
-				username: req.user.username,
-			},
+			createdBy: req.user._id,
 			contents: contents,
 			caption: caption ? caption : null,
 		});
@@ -55,7 +51,7 @@ export const deletePost = catchAsyncErrors(
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
-		if (post.createdBy.id !== req.user._id.toString()) {
+		if (post.createdBy.toString() !== req.user._id.toString()) {
 			return next(new ErrorHandler('Unauthorized', 401));
 		}
 
@@ -63,7 +59,7 @@ export const deletePost = catchAsyncErrors(
 		await post.delete();
 
 		/*
-			When a post is deleted it should delete all the 
+			When a post is deleted it should delete all the
 			comments it has and each comment shall delete
 			all the replies it has
 		*/
@@ -91,6 +87,10 @@ export const getRandomPost = catchAsyncErrors(
 			totalPosts - (page + 1) * postsPerPage > 0 ? true : false;
 
 		const posts = await Post.find({})
+			.populate({
+				path: 'createdBy',
+				select: '_id username profilePic',
+			})
 			.sort({ _id: -1 })
 			.skip(page * postsPerPage)
 			.limit(postsPerPage);
@@ -110,14 +110,21 @@ export const getPostById = catchAsyncErrors(
 		}
 
 		// select everything from post except comments and likedBy
-		const post = await Post.find({ _id: postId }, { comments: 0 }).lean();
+		const post = await Post.find({ _id: postId }, { comments: 0 })
+			.populate({
+				path: 'createdBy',
+				select: '_id username profilePic',
+			})
+			.lean();
 
 		if (post.length === 0) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
 		if (
-			post[0].likedBy.find((userId) => userId === req.user._id.toString())
+			post[0].likedBy.find(
+				(userId) => userId.toString() === req.user._id.toString()
+			)
 		) {
 			(post[0] as any).isLiked = true;
 		} else {
@@ -153,16 +160,17 @@ export const getPostsByUser = catchAsyncErrors(
 
 		const hasPrev = page > 0 ? true : false;
 		let hasNext =
-			(await Post.count({ 'createdBy.id': userId })) -
+			(await Post.count({ createdBy: userId })) -
 				(page + 1) * postsPerPage >
 			0
 				? true
 				: false;
 
-		const posts = await Post.find(
-			{ 'createdBy.id': userId },
-			{ comments: 0 }
-		)
+		const posts = await Post.find({ createdBy: userId }, { comments: 0 })
+			.populate({
+				path: 'createdBy',
+				select: '_id username profilePic',
+			})
 			.sort({ _id: -1 })
 			.skip(page * postsPerPage)
 			.limit(postsPerPage)
@@ -171,7 +179,7 @@ export const getPostsByUser = catchAsyncErrors(
 		posts.forEach((post) => {
 			if (
 				post.likedBy.find(
-					(userId) => userId === req.user._id.toString()
+					(userId) => userId.toString() === req.user._id.toString()
 				)
 			) {
 				(post as any).isLiked = true;
@@ -208,7 +216,7 @@ export const likePost = catchAsyncErrors(
 
 		// if already liked do nothing
 		const isLiked = post.likedBy.find(
-			(userId) => userId === req.user._id.toString()
+			(userId) => userId.toString() === req.user._id.toString()
 		);
 
 		if (isLiked) {
@@ -216,12 +224,12 @@ export const likePost = catchAsyncErrors(
 		}
 
 		// push userId into likedBy field of post
-		post.likedBy.push(req.user._id.toString());
+		post.likedBy.push(req.user._id);
 
 		// increase likes count of the provided postId
 		post.likes += 1;
 
-		const postCreator = await User.findById(post.createdBy.id);
+		const postCreator = await User.findById(post.createdBy);
 
 		if (!postCreator) {
 			return next(
@@ -231,14 +239,10 @@ export const likePost = catchAsyncErrors(
 
 		// notify the creator of the provided postId
 		postCreator.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'liked',
 			contentType: 'post',
-			contentId: post._id.toString(),
+			contentId: post._id,
 			time: new Date(),
 		});
 		postCreator.notificationCount++;
@@ -266,7 +270,7 @@ export const unlikePost = catchAsyncErrors(
 
 		// Check if userId already exists in the likedBy field of post
 		const isLiked = post.likedBy.find(
-			(userId) => userId === req.user._id.toString()
+			(userId) => userId.toString() === req.user._id.toString()
 		);
 
 		if (!isLiked) {
@@ -275,7 +279,7 @@ export const unlikePost = catchAsyncErrors(
 
 		// remove userId from post's likedBy field
 		post.likedBy = post.likedBy.filter(
-			(userId) => userId !== req.user._id.toString()
+			(userId) => userId.toString() !== req.user._id.toString()
 		);
 
 		// decrease likes count of the provided postId
@@ -304,21 +308,17 @@ export const commentOnPost = catchAsyncErrors(
 		// Create a comment
 		const comment = await Comment.create({
 			postId: postId,
-			createdBy: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			createdBy: req.user._id,
 			content: content,
 		});
 
 		// insert comment's id into comments field of post
-		post.comments.push(comment._id.toString());
+		post.comments.push(comment._id);
 
 		// increase commentsCount
 		post.commentsCount += 1;
 
-		const postCreator = await User.findById(post.createdBy.id);
+		const postCreator = await User.findById(post.createdBy);
 
 		if (!postCreator) {
 			return next(
@@ -328,21 +328,23 @@ export const commentOnPost = catchAsyncErrors(
 
 		// notify the user about the comment
 		postCreator.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'commented',
 			contentType: 'post',
-			contentId: post._id.toString(),
-			commentId: comment._id.toString(),
+			contentId: post._id,
+			commentId: comment._id,
 			time: new Date(),
 		});
 		postCreator.notificationCount++;
 
 		await post.save();
 		await postCreator.save();
+
+		// Populate comment's user fields
+		await comment.populate({
+			path: 'createdBy',
+			select: '_id username profilePic',
+		});
 
 		res.status(201).json(new ResponseData(true, { comment }));
 	}
@@ -365,8 +367,12 @@ export const getComments = catchAsyncErrors(
 		let commentIds = await Post.findById(postId)
 			.select('comments')
 			.sort({ _id: -1 }) // sorts by generation_time of comment's ObjectId in descending order
-			.then((commentIds) => {
-				return commentIds?.comments;
+			.then((post) => {
+				if (!post) {
+					return [];
+				}
+
+				return post.comments;
 			});
 
 		if (!commentIds) {
@@ -396,13 +402,17 @@ export const getComments = catchAsyncErrors(
 			{ _id: { $in: commentIds } },
 			{ replies: 0 }
 		)
+			.populate({
+				path: 'createdBy',
+				select: '_id username profilePic',
+			})
 			.sort({ _id: -1 })
 			.lean();
 
 		comments.forEach((comment) => {
 			if (
 				comment.likedBy.find(
-					(userId) => userId === req.user._id.toString()
+					(userId) => userId.toString() === req.user._id.toString()
 				)
 			) {
 				(comment as any).isLiked = true;

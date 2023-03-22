@@ -55,25 +55,27 @@ describe('Integration test for edit profile route', () => {
 				save: jest.fn(),
 			})
 			.mockImplementationOnce(() => ({
-				_id: 'userid',
-				bio: 'bio',
-				dateOfBirth: 'dateOfBirth',
-				gender: 'gender',
-				firstname: 'firstname',
-				lastname: 'lastname',
-				email: 'email',
-				username: 'username',
-				profilePic: 'profilePic',
-				postsCount: 0,
-				friendsCount: 0,
-				followersCount: 0,
-				followingsCount: 0,
-				friends: [],
-				followers: [],
-				followings: [],
-				recentSearches: [],
-				notificationCount: 0,
-				save: jest.fn(),
+				populate: jest.fn().mockResolvedValueOnce({
+					_id: 'userid',
+					bio: 'bio',
+					dateOfBirth: 'dateOfBirth',
+					gender: 'gender',
+					firstname: 'firstname',
+					lastname: 'lastname',
+					email: 'email',
+					username: 'username',
+					profilePic: 'profilePic',
+					postsCount: 0,
+					friendsCount: 0,
+					followersCount: 0,
+					followingsCount: 0,
+					friends: [],
+					followers: [],
+					followings: [],
+					recentSearches: [],
+					notificationCount: 0,
+					save: jest.fn(),
+				}),
 			}));
 
 		const response = await request(app)
@@ -86,7 +88,7 @@ describe('Integration test for edit profile route', () => {
 			success: true,
 			data: {
 				userObj: {
-					id: 'userid',
+					_id: 'userid',
 					bio: 'bio',
 					email: 'email',
 					dateOfBirth: 'dateOfBirth',
@@ -110,17 +112,7 @@ describe('Integration test for edit profile route', () => {
 		});
 	});
 
-	it('POST /api/settings/profile - failure if no userId is provided', async () => {
-		const requestBody = {
-			// userId: '',
-			profilePic: 'profilePic',
-			firstname: 'firstname',
-			lastname: 'lastname',
-			bio: 'bio',
-			dateOfBirth: 'dateOfBirth',
-			gender: 'male',
-		};
-
+	it('POST /api/settings/profile - failure if user is invalid', async () => {
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
@@ -130,7 +122,9 @@ describe('Integration test for edit profile route', () => {
 				profilePic: 'profilePic',
 				save: jest.fn(),
 			})
-			.mockImplementationOnce(() => false);
+			.mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce(false),
+			}));
 
 		const response = await request(app)
 			.post('/api/settings/profile')
@@ -138,28 +132,7 @@ describe('Integration test for edit profile route', () => {
 			.send(requestBody);
 
 		expect(response.statusCode).toBe(400);
-		expect(response.body.error).toBe('userId not provided');
-	});
-
-	it('POST /api/settings/profile - failure if userId is invalid', async () => {
-		User.findById = jest
-			.fn()
-			.mockResolvedValueOnce({
-				_id: 'id',
-				email: 'email',
-				username: 'username',
-				profilePic: 'profilePic',
-				save: jest.fn(),
-			})
-			.mockImplementationOnce(() => false);
-
-		const response = await request(app)
-			.post('/api/settings/profile')
-			.set('Authorization', 'Bearer Token')
-			.send(requestBody);
-
-		expect(response.statusCode).toBe(400);
-		expect(response.body.error).toBe('Invalid userId');
+		expect(response.body.error).toBe('Invalid user');
 	});
 });
 

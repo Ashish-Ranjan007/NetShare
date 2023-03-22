@@ -57,12 +57,10 @@ describe('Integration tests for like reply route', () => {
 				notifications: [],
 				save: jest.fn(),
 			});
-
 		const response = await request(app)
 			.post('/api/reply/like')
 			.set('Authorization', 'Bearer token')
 			.send({ replyId: 'replyId' });
-
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toEqual({
 			success: true,
@@ -213,15 +211,21 @@ describe('Integration tests for reply to reply route', () => {
 			replies: [],
 			repliesCount: 0,
 			postId: 'postId',
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 			save: jest.fn(),
 		});
 		Reply.findById = jest.fn().mockResolvedValueOnce({
 			_id: 'replyid',
-			createdBy: { username: 'username', id: 'id' },
+			createdBy: 'id',
 		});
 		Reply.create = jest.fn().mockImplementationOnce(() => ({
 			_id: '_id',
+			repliedTo: {
+				replyId: 'replyId',
+				username: 'username',
+			},
+			populate: jest.fn(),
+			save: jest.fn(),
 		}));
 		Post.findById = jest.fn().mockImplementationOnce(() => ({
 			_id: 'postid',
@@ -320,14 +324,18 @@ describe('Integration tests for reply to reply route', () => {
 
 describe('Integration tests for update reply route', () => {
 	it('POST /api/reply/update - success - update a reply', async () => {
-		Reply.findById = jest.fn().mockResolvedValueOnce({
-			replies: [],
-			repliesCount: 0,
-			createdBy: { id: 'userId' },
-			content: '',
-			updatedAt: null,
-			save: jest.fn(),
-		});
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					replies: [],
+					repliesCount: 0,
+					createdBy: { _id: 'userId' },
+					content: '',
+					updatedAt: null,
+					save: jest.fn(),
+				}),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/reply/update')
@@ -348,7 +356,11 @@ describe('Integration tests for update reply route', () => {
 	});
 
 	it('POST /api/reply/update - failure if provided replyId is invalid', async () => {
-		Reply.findById = jest.fn().mockResolvedValueOnce(false);
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce(false),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/reply/update')
@@ -360,14 +372,18 @@ describe('Integration tests for update reply route', () => {
 	});
 
 	it('POST /api/reply/update - failure if creator of reply is not user', async () => {
-		Reply.findById = jest.fn().mockResolvedValueOnce({
-			replies: [],
-			repliesCount: 0,
-			createdBy: { id: 'id' },
-			save: jest.fn(),
-			content: '',
-			updatedAt: Date.now(),
-		});
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					replies: [],
+					repliesCount: 0,
+					createdBy: { _id: 'id' },
+					save: jest.fn(),
+					content: '',
+					updatedAt: Date.now(),
+				}),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/reply/update')
@@ -382,7 +398,7 @@ describe('Integration tests for update reply route', () => {
 describe('Integration tests for delete reply route', () => {
 	it('DELETE /api/reply/delete - success - delete a reply', async () => {
 		Reply.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'userId' },
+			createdBy: 'userId',
 			delete: jest.fn(),
 		});
 
@@ -418,7 +434,7 @@ describe('Integration tests for delete reply route', () => {
 
 	it('DELETE /api/reply/delete - failure if creator of reply is not user', async () => {
 		Reply.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 		});
 
 		const response = await request(app)

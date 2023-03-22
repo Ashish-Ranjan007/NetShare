@@ -29,8 +29,8 @@ jest.mock('../../../models/Message.model');
 describe('Fetch messages of a chat', () => {
 	it('should throw an error if chatId is not provided', async () => {
 		mockRequest.query = {};
-		await fetchMessages(mockRequest, mockResponse, mockNext);
 
+		await fetchMessages(mockRequest, mockResponse, mockNext);
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provide a chatId', 400)
 		);
@@ -65,13 +65,7 @@ describe('Fetch messages of a chat', () => {
 		mockRequest.query = { chatId: '6382dfe80a6e1ffcb2f52cce' };
 
 		Chat.findById = jest.fn().mockResolvedValueOnce({
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			members: ['userId'],
 			totalMessages: 0,
 		});
 		Message.find = jest.fn().mockImplementationOnce(() => ({
@@ -85,7 +79,6 @@ describe('Fetch messages of a chat', () => {
 		}));
 
 		await fetchMessages(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -104,7 +97,6 @@ describe('Delete a message', () => {
 		Message.findById = jest.fn().mockResolvedValueOnce(null);
 
 		await deleteMessage(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provided messageId is invalid', 400)
 		);
@@ -113,15 +105,10 @@ describe('Delete a message', () => {
 	it('should throw an error if current user is not the creator of the message', async () => {
 		mockRequest.body = { messageId: 'messageId' };
 		Message.findById = jest.fn().mockResolvedValueOnce({
-			sender: {
-				id: 'sender',
-				username: 'username',
-				profilePic: 'profilePic',
-			},
+			sender: 'sender',
 		});
 
 		await deleteMessage(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler(
 				'Only creator of a message is authorized to delete it',
@@ -139,7 +126,6 @@ describe('Delete a message', () => {
 		});
 
 		await deleteMessage(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });

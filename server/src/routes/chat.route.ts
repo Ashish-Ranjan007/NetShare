@@ -12,6 +12,7 @@ import {
 	setDisplayPicture,
 	deleteChat,
 	resetUnreadMessages,
+	exitGroup,
 } from '../controllers/chat.controller';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequestSchema } from '../middlewares/validateRequestSchema';
@@ -37,5 +38,6 @@ chatRoutes.post('/seen-all-messages', [isAuthenticated], resetUnreadMessages);
 chatRoutes.post('/set-display-picture', [isAuthenticated], setDisplayPicture);
 chatRoutes.delete('/delete-chat', [isAuthenticated], deleteChat);
 chatRoutes.delete('/delete-group-chat', [isAuthenticated], deleteChat);
+chatRoutes.post('/exit-group-chat', [isAuthenticated], exitGroup);
 
 export { chatRoutes };

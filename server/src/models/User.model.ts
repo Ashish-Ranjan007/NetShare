@@ -1,19 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { Model, Schema, model } from 'mongoose';
-
-type ProfileReference = {
-	id: string;
-	username: string;
-	profilePic: string;
-};
+import { Model, Schema, model, Types } from 'mongoose';
 
 type NotificationType = {
 	time: Date;
-	user: ProfileReference;
-	contentId?: string;
-	commentId?: String;
-	replyId?: string;
+	user: Types.ObjectId;
+	contentId?: Types.ObjectId;
+	commentId?: Types.ObjectId;
+	replyId?: Types.ObjectId;
 	action: 'liked' | 'commented' | 'followed' | 'replied';
 	contentType: 'comment' | 'reply' | 'post' | 'profile';
 };
@@ -34,10 +28,10 @@ export interface IUser {
 	followingsCount: number;
 	dateOfBirth: Date | null;
 	notificationCount: number;
-	friends: ProfileReference[];
-	followers: ProfileReference[];
-	followings: ProfileReference[];
-	recentSearches: ProfileReference[];
+	friends: Types.ObjectId[];
+	followers: Types.ObjectId[];
+	followings: Types.ObjectId[];
+	recentSearches: Types.ObjectId[];
 	notifications: NotificationType[];
 	notificationHistory: NotificationType[];
 	gender: 'Male' | 'Female' | 'Others' | null;
@@ -110,19 +104,39 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 		default: 0,
 	},
 	friends: {
-		type: [{ id: String, profilePic: String, username: String }],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'User',
+			},
+		],
 		default: [],
 	},
 	recentSearches: {
-		type: [{ id: String, profilePic: String, username: String }],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'User',
+			},
+		],
 		default: [],
 	},
 	followers: {
-		type: [{ id: String, profilePic: String, username: String }],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'User',
+			},
+		],
 		default: [],
 	},
 	followings: {
-		type: [{ id: String, profilePic: String, username: String }],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'User',
+			},
+		],
 		default: [],
 	},
 	notificationCount: {
@@ -134,13 +148,21 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 			{
 				time: Date,
 				user: {
-					id: String,
-					profilePic: String,
-					username: String,
+					type: Schema.Types.ObjectId,
+					ref: 'User',
 				},
-				postId: String,
-				commentId: String,
-				replyId: String,
+				postId: {
+					type: Schema.Types.ObjectId,
+					ref: 'Post',
+				},
+				commentId: {
+					type: Schema.Types.ObjectId,
+					ref: 'Comment',
+				},
+				replyId: {
+					type: Schema.Types.ObjectId,
+					ref: 'Reply',
+				},
 				contentId: String,
 				action: String,
 				contentType: String,
@@ -152,9 +174,8 @@ export const UserSchema = new Schema<IUser, UserModel, IUserMethods>({
 		type: [
 			{
 				user: {
-					id: String,
-					profilePic: String,
-					username: String,
+					type: Schema.Types.ObjectId,
+					ref: 'User',
 				},
 				action: String,
 				contentType: String,

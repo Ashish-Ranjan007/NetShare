@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { User } from '../models/User.model';
-import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 
 type SuggestedProfile = {
-	id: string;
+	_id: string;
 	username: string;
 	profilePic: string;
 };
@@ -17,14 +16,14 @@ export const getSuggestProfiles = catchAsyncErrors(
 		// Suggest 5 random profiles current user does not already follow
 		const users = await User.find({
 			$and: [
-				{ _id: { $ne: req.user._id.toString() } },
-				{ 'followers.id': { $ne: req.user._id.toString() } },
+				{ _id: { $ne: req.user._id } },
+				{ followers: { $nin: [req.user._id] } },
 			],
 		}).limit(5);
 
 		const result: SuggestedProfile[] = users.map((user) => {
 			return {
-				id: user._id.toString(),
+				_id: user._id.toString(),
 				username: user.username,
 				profilePic: user.profilePic,
 			};
@@ -39,19 +38,24 @@ export const getSuggestProfiles = catchAsyncErrors(
 // Birthday Notification
 export const getBirthdays = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		// Get Birthdays of friends
-		const user = await User.findById(req.user._id);
+		let friends = await User.findById(req.user._id)
+			.select('friends')
+			.populate({
+				path: 'friends',
+				select: '_id username profilePic dateOfBirth',
+			})
+			.then((user) => {
+				if (!user) {
+					return [];
+				}
 
-		if (!user) {
-			return next(new ErrorHandler('User not found', 404));
-		}
+				return user.friends;
+			});
 
-		const friends = [];
-
-		for (let i = 0; i < user.friends.length; i++) {
-			const friend = await User.findById(user.friends[i].id);
-
-			if (!friend || !friend.dateOfBirth) continue;
+		friends = friends.filter((friend: any) => {
+			if (!friend.dateOfBirth) {
+				return false;
+			}
 
 			const date = new Date();
 			const dateOfBirth = new Date(friend.dateOfBirth);
@@ -60,13 +64,11 @@ export const getBirthdays = catchAsyncErrors(
 				date.getDate() === dateOfBirth.getDate() &&
 				date.getMonth() === dateOfBirth.getMonth()
 			) {
-				friends.push({
-					id: friend._id.toString(),
-					username: friend.username,
-					profilePic: friend.profilePic,
-				});
+				return true;
 			}
-		}
+
+			return false;
+		});
 
 		res.status(200).json(new ResponseData(true, { friends: friends }));
 	}

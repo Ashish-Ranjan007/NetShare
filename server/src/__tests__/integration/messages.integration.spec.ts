@@ -36,13 +36,7 @@ afterEach(() => {
 describe('Integration tests for fetching the messages of a chat route', () => {
 	it('GET /api/messages/ - success - fetch all the messages of the provided group', async () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce({
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			members: ['userId'],
 			totalMessages: 0,
 		});
 		Message.find = jest.fn().mockImplementationOnce(() => ({
@@ -150,11 +144,7 @@ describe('Integration tests for deleting a message route', () => {
 
 	it('DELETE /api/messages/delete - failure if current user is not the creator of the provided message', async () => {
 		Message.findById = jest.fn().mockResolvedValueOnce({
-			sender: {
-				id: 'senderId',
-				username: 'username',
-				profilePic: 'profilePic',
-			},
+			sender: 'senderId',
 		});
 
 		const response = await request(app)

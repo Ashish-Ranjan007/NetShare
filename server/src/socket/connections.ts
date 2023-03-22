@@ -23,7 +23,9 @@ const onConnection = (io: Server, socket: Socket) => {
 		}
 
 		// Check if user is a member of the chat
-		const isMember = chat.members.find((member) => member.id === userId);
+		const isMember = chat.members.find(
+			(member) => member.toString() === userId
+		);
 		if (!isMember) {
 			socket.emit('not_authorized_to_join');
 		}

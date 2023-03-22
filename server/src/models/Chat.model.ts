@@ -1,23 +1,17 @@
-import mongoose, { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import { Message } from './Message.model';
-
-type ProfileReference = {
-	id: string;
-	profilePic: string;
-	username: string;
-};
 
 export interface IChat {
 	isGroup: boolean;
-	members: ProfileReference[];
+	members: Types.ObjectId[];
 	name: 'direct message' | string;
-	createdBy: ProfileReference;
-	lastMessage: mongoose.Types.ObjectId;
+	createdBy: Types.ObjectId;
+	lastMessage: Types.ObjectId;
 	displayPicture: string;
-	admins: ProfileReference[];
+	admins: Types.ObjectId[];
 	totalMessages: number;
 	unreadMessages: {
-		userId: mongoose.Types.ObjectId;
+		userId: Types.ObjectId;
 		newMessages: number;
 	}[];
 }
@@ -29,7 +23,7 @@ const ChatSchema = new Schema<IChat>(
 			required: true,
 		},
 		members: {
-			type: [{ id: String, profilePic: String, username: String }],
+			type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 			required: true,
 		},
 		name: {
@@ -37,7 +31,8 @@ const ChatSchema = new Schema<IChat>(
 			required: true,
 		},
 		createdBy: {
-			type: { id: String, profilePic: String, username: String },
+			type: Schema.Types.ObjectId,
+			ref: 'User',
 		},
 		lastMessage: {
 			type: Schema.Types.ObjectId,
@@ -48,7 +43,7 @@ const ChatSchema = new Schema<IChat>(
 			default: '',
 		},
 		admins: {
-			type: [{ id: String, profilePic: String, username: String }],
+			type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 		},
 		totalMessages: {
 			type: Number,

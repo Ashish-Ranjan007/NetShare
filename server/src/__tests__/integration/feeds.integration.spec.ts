@@ -43,20 +43,20 @@ describe('Integration tests for feeds route', () => {
 				}),
 			}));
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							lean: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			})),
 		}));
 		Post.count = jest.fn().mockResolvedValueOnce(0);
-
 		const response = await request(app)
 			.get('/api/home/feeds')
 			.set('Authorization', 'Bearer Token');
-
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,

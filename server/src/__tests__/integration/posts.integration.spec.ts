@@ -48,7 +48,6 @@ describe('Integration tests for create post route', () => {
 					save: jest.fn(),
 				}),
 			}));
-
 		const response = await request(app)
 			.post('/api/posts/create')
 			.set('Authorization', 'Bearer Token')
@@ -58,7 +57,6 @@ describe('Integration tests for create post route', () => {
 					{ public_id: 'public_id', secure_url: 'secure_url' },
 				],
 			});
-
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toEqual({
 			success: true,
@@ -84,7 +82,7 @@ describe('Integration tests for create post route', () => {
 describe('Integration tests for delete post route', () => {
 	it('DELETE /api/posts/delete - success - delete a post', async () => {
 		Post.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'userId' },
+			createdBy: 'userId',
 			delete: jest.fn(),
 		});
 		User.findById = jest
@@ -172,9 +170,11 @@ describe('Integration tests for get posts by id route', () => {
 			username: 'username',
 		});
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			lean: jest
-				.fn()
-				.mockResolvedValueOnce([{ _id: '_id', likedBy: [] }]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				lean: jest
+					.fn()
+					.mockResolvedValueOnce([{ _id: '_id', likedBy: [] }]),
+			})),
 		}));
 
 		const response = await request(app)
@@ -202,7 +202,9 @@ describe('Integration tests for get posts by id route', () => {
 
 	it('GET /api/posts/by-id - failure if provided postId is invalid', async () => {
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				lean: jest.fn().mockResolvedValueOnce([]),
+			})),
 		}));
 
 		const response = await request(app)
@@ -219,10 +221,12 @@ describe('Integration tests for get posts by user route', () => {
 	it('GET /api/posts/by-user - success - send back a post', async () => {
 		User.exists = jest.fn().mockResolvedValueOnce({});
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							lean: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			})),
@@ -455,15 +459,28 @@ describe('Integration tests for comment on a post route', () => {
 		Post.findById = jest.fn().mockResolvedValueOnce({
 			_id: 'postId',
 			comments: [],
-			createdBy: { id: 'id' },
+			createdBy: { _id: '_id' },
 			commentsCount: 0,
 			save: jest.fn(),
 		});
-		Comment.create = jest.fn().mockResolvedValueOnce({ _id: '_id' });
+		Comment.create = jest.fn().mockImplementationOnce(function (arg) {
+			return {
+				_id: '_id',
+				populate: jest
+					.fn()
+					.mockImplementationOnce(function (this: any) {
+						this.createdBy = {
+							_id: arg.createdBy,
+							username: 'username',
+							profilePic: 'profilePic',
+						};
+					}),
+			};
+		});
 		User.findById = jest
 			.fn()
 			.mockResolvedValueOnce({
-				_id: 'id',
+				_id: '_id',
 				email: 'email',
 				username: 'username',
 				profilePic: 'profilePic',
@@ -482,7 +499,16 @@ describe('Integration tests for comment on a post route', () => {
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toEqual({
 			success: true,
-			data: { comment: { _id: '_id' } },
+			data: {
+				comment: {
+					_id: '_id',
+					createdBy: {
+						_id: '_id',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				},
+			},
 			error: '',
 		});
 	});
@@ -520,8 +546,10 @@ describe('Integration tests for comment on a post route', () => {
 			})),
 		}));
 		Comment.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					lean: jest.fn().mockResolvedValueOnce([]),
+				})),
 			})),
 		}));
 

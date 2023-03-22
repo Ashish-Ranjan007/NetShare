@@ -23,17 +23,17 @@ afterEach(() => {
 describe('Get notifications', () => {
 	it('should return a status of 200', async () => {
 		mockRequest.query = { page: '0' };
-
 		User.findById = jest.fn().mockImplementationOnce(() => ({
 			select: jest.fn().mockImplementationOnce(() => ({
-				sort: jest.fn().mockImplementationOnce(() => ({
-					then: () => [],
+				populate: jest.fn().mockImplementationOnce(() => ({
+					sort: jest.fn().mockImplementationOnce(() => ({
+						then: () => [],
+					})),
 				})),
 			})),
 		}));
 
 		await getNotifications(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -44,8 +44,10 @@ describe('Get notificationHistory', () => {
 
 		User.findById = jest.fn().mockImplementationOnce(() => ({
 			select: jest.fn().mockImplementationOnce(() => ({
-				sort: jest.fn().mockImplementationOnce(() => ({
-					then: () => [],
+				populate: jest.fn().mockImplementationOnce(() => ({
+					sort: jest.fn().mockImplementationOnce(() => ({
+						then: () => [],
+					})),
 				})),
 			})),
 		}));

@@ -1,23 +1,17 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 
 import { Post } from './Post.model';
 import { Reply } from './Reply.model';
 
-type ProfileReference = {
-	id: string;
-	profilePic: string;
-	username: string;
-};
-
 export interface IComment {
 	postId: string;
-	createdBy: ProfileReference;
+	createdBy: Types.ObjectId;
 	createdAt: Date;
 	likes: number;
-	likedBy: string[];
+	likedBy: Types.ObjectId[];
 	content: string;
 	repliesCount: number;
-	replies: string[];
+	replies: Types.ObjectId[];
 	updatedAt: Date | null;
 	isLiked: boolean;
 }
@@ -28,7 +22,8 @@ const CommentSchema = new Schema<IComment>({
 		required: true,
 	},
 	createdBy: {
-		type: { id: String, profilePic: String, username: String },
+		type: Schema.Types.ObjectId,
+		ref: 'User',
 		required: [true, 'Please provide the user id of the creator'],
 	},
 	createdAt: {
@@ -40,7 +35,12 @@ const CommentSchema = new Schema<IComment>({
 		default: 0,
 	},
 	likedBy: {
-		type: [String],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'User',
+			},
+		],
 		default: [],
 	},
 	content: {
@@ -52,7 +52,12 @@ const CommentSchema = new Schema<IComment>({
 		default: 0,
 	},
 	replies: {
-		type: [String],
+		type: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'Reply',
+			},
+		],
 		default: [],
 	},
 	updatedAt: {
@@ -70,7 +75,7 @@ CommentSchema.pre('remove', async function (next) {
 
 		// remove this from comments field of comment
 		post.comments = post.comments.filter(
-			(commentId) => commentId !== this._id.toString()
+			(commentId) => commentId.toString() !== this._id.toString()
 		);
 
 		await post.save();

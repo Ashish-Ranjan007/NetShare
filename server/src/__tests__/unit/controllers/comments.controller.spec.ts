@@ -35,7 +35,6 @@ describe('Like a comment', () => {
 	it('should call next if no comment is provided', async () => {
 		mockRequest.body = { commentId: false };
 		await likeComment(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('No comment is provided', 400)
 		);
@@ -196,7 +195,7 @@ describe('Reply on a comment', () => {
 		Comment.findById = jest.fn().mockImplementationOnce(() => ({
 			replies: [],
 			repliesCount: 0,
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 		}));
 		Reply.create = jest.fn();
 
@@ -216,7 +215,7 @@ describe('Reply on a comment', () => {
 			replies: [],
 			repliesCount: 0,
 			postId: 'postId',
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 		}));
 		Reply.create = jest.fn().mockResolvedValueOnce({ _id: '_id' });
 		Post.findById = jest.fn().mockResolvedValueOnce({
@@ -244,10 +243,17 @@ describe('Reply on a comment', () => {
 			replies: [],
 			repliesCount: 0,
 			postId: 'postId',
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 			save: jest.fn(),
 		}));
-		Reply.create = jest.fn().mockResolvedValueOnce({ _id: '_id' });
+		Reply.create = jest.fn().mockImplementationOnce(() => ({
+			_id: '_id',
+			populate: jest.fn().mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username',
+				profilePic: 'profilePic',
+			}),
+		}));
 		Post.findById = jest.fn().mockResolvedValueOnce({
 			commentsCount: 0,
 			save: jest.fn(),
@@ -277,7 +283,11 @@ describe('Update a comment', () => {
 
 	it('should call next if provided comment is invalid', async () => {
 		mockRequest.body = { commentId: 'commentId', content: 'content' };
-		Comment.findById = jest.fn().mockResolvedValueOnce(false);
+		Comment.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce(null),
+			})),
+		}));
 
 		await updateComment(mockRequest, mockResponse, mockNext);
 
@@ -294,10 +304,18 @@ describe('Update a comment', () => {
 		};
 		mockRequest.body = { commentId: 'commentId', content: 'content' };
 		Comment.findById = jest.fn().mockImplementationOnce(() => ({
-			createdBy: { id: 'id' },
-			content: '',
-			updatedAt: new Date(),
-			save: jest.fn(),
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					createdBy: {
+						_id: 'id',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+					content: '',
+					updatedAt: new Date(),
+					save: jest.fn(),
+				}),
+			})),
 		}));
 
 		await updateComment(mockRequest, mockResponse, mockNext);
@@ -316,12 +334,20 @@ describe('Update a comment', () => {
 		};
 		mockRequest.body = { commentId: 'commentId', content: 'content' };
 		Comment.findById = jest.fn().mockImplementationOnce(() => ({
-			likedBy: [],
-			createdBy: { id: '_id' },
-			content: '',
-			updatedAt: new Date(),
-			save: jest.fn(),
-			toObject: jest.fn(),
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					likedBy: [],
+					createdBy: {
+						_id: '_id',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+					content: '',
+					updatedAt: new Date(),
+					save: jest.fn(),
+					toObject: jest.fn(),
+				}),
+			})),
 		}));
 
 		await updateComment(mockRequest, mockResponse, mockNext);
@@ -356,7 +382,7 @@ describe('Delete a comment', () => {
 		mockRequest.user = { _id: '_id' };
 		mockRequest.body = { commentId: 'commentId' };
 		Comment.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 		});
 
 		await deleteComment(mockRequest, mockResponse, mockNext);
@@ -371,7 +397,7 @@ describe('Delete a comment', () => {
 		mockRequest.user = { _id: '_id' };
 		mockRequest.body = { commentId: 'commentId' };
 		Comment.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: '_id' },
+			createdBy: '_id',
 			delete: jest.fn(),
 		});
 
@@ -411,8 +437,10 @@ describe('Get replies', () => {
 			replies: [],
 		});
 		Reply.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					lean: jest.fn().mockResolvedValueOnce([]),
+				})),
 			})),
 		}));
 

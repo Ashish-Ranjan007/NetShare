@@ -35,9 +35,7 @@ afterEach(() => {
 describe('Create a post', () => {
 	it('should call next if no contents are provided', async () => {
 		mockRequest.body = { contents: '', caption: '' };
-
 		await createPost(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Bad Request', 400)
 		);
@@ -88,9 +86,7 @@ describe('Delete a post', () => {
 
 	it('should call next if user is not the creator of post', async () => {
 		mockRequest.body = { postId: 'postId' };
-		Post.findById = jest
-			.fn()
-			.mockResolvedValueOnce({ createdBy: { id: '_id' } });
+		Post.findById = jest.fn().mockResolvedValueOnce({ createdBy: '_id' });
 
 		await deletePost(mockRequest, mockResponse, mockNext);
 
@@ -102,7 +98,7 @@ describe('Delete a post', () => {
 	it('should return a status of 200', async () => {
 		mockRequest.body = { postId: 'postId' };
 		Post.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 			delete: jest.fn(),
 		});
 		User.findById = jest.fn().mockImplementationOnce(() => ({
@@ -132,7 +128,9 @@ describe('Get a post by postId', () => {
 	it('should call next if provided postId is invalid', async () => {
 		mockRequest.query = { postId: 'postId' };
 		Post.find = jest.fn().mockImplementation(() => ({
-			lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				lean: jest.fn().mockResolvedValueOnce([]),
+			})),
 		}));
 
 		await getPostById(mockRequest, mockResponse, mockNext);
@@ -146,11 +144,13 @@ describe('Get a post by postId', () => {
 		mockRequest.body = { user: { _id: 'userId' } };
 		mockRequest.query = { postId: 'postId' };
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			lean: jest.fn().mockResolvedValueOnce([
-				{
-					likedBy: [],
-				},
-			]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				lean: jest.fn().mockResolvedValueOnce([
+					{
+						likedBy: [],
+					},
+				]),
+			})),
 		}));
 
 		await getPostById(mockRequest, mockResponse, mockNext);
@@ -186,10 +186,12 @@ describe('Get posts by userId', () => {
 		User.exists = jest.fn().mockResolvedValueOnce([]);
 		Post.count = jest.fn().mockResolvedValueOnce(0);
 		Post.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						lean: () => [],
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							lean: () => [],
+						})),
 					})),
 				})),
 			})),
@@ -373,8 +375,11 @@ describe('Comment on a post', () => {
 			createdBy: { id: 'id' },
 			save: jest.fn(),
 		});
-		Comment.create = jest.fn().mockResolvedValueOnce({
-			_id: '_id',
+		Comment.create = jest.fn().mockImplementationOnce(function () {
+			return {
+				_id: '_id',
+				populate: jest.fn(),
+			};
 		});
 		User.findById = jest.fn().mockResolvedValueOnce({
 			notificationCount: 0,

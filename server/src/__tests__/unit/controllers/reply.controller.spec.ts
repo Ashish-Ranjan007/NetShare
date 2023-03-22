@@ -34,7 +34,6 @@ describe('Like a reply', () => {
 	it('should call next if no reply is provided', async () => {
 		mockRequest.body = { commentId: false };
 		await likeReply(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('No replyId is provided', 400)
 		);
@@ -233,15 +232,21 @@ describe('Reply to a reply', () => {
 			replies: [],
 			repliesCount: 0,
 			postId: 'postId',
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 			save: jest.fn(),
 		});
 		Reply.findById = jest.fn().mockResolvedValueOnce({
 			_id: 'replyId',
-			createdBy: { username: 'username', id: 'id' },
+			createdBy: 'id',
 		});
 		Reply.create = jest.fn().mockImplementationOnce(() => ({
 			_id: '_id',
+			repliedTo: {
+				replyId: 'replyId',
+				username: 'username',
+			},
+			populate: jest.fn().mockResolvedValueOnce({}),
+			save: jest.fn(),
 		}));
 		Post.findById = jest.fn().mockImplementationOnce(() => ({
 			_id: '_id',
@@ -280,7 +285,11 @@ describe('Update a reply', () => {
 
 	it('should call next if provided replyId is invalid', async () => {
 		mockRequest.body = { replyId: 'replyId', content: 'content' };
-		Reply.findById = jest.fn().mockResolvedValueOnce(false);
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce(false),
+			})),
+		}));
 
 		await updateReply(mockRequest, mockResponse, mockNext);
 
@@ -296,9 +305,13 @@ describe('Update a reply', () => {
 			profilePic: 'profilePic',
 		};
 		mockRequest.body = { replyId: 'replyId', content: 'content' };
-		Reply.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'id' },
-		});
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					createdBy: { _id: 'id' },
+				}),
+			})),
+		}));
 
 		await updateReply(mockRequest, mockResponse, mockNext);
 
@@ -315,12 +328,17 @@ describe('Update a reply', () => {
 			profilePic: 'profilePic',
 		};
 		mockRequest.body = { replyId: 'replyId', content: 'content' };
-		Reply.findById = jest.fn().mockResolvedValueOnce({
-			content: '',
-			updatedAt: null,
-			createdBy: { id: '_id' },
-			save: jest.fn(),
-		});
+
+		Reply.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					content: '',
+					updatedAt: null,
+					createdBy: { _id: '_id' },
+					save: jest.fn(),
+				}),
+			})),
+		}));
 
 		await updateReply(mockRequest, mockResponse, mockNext);
 
@@ -358,7 +376,7 @@ describe('Delete a reply', () => {
 		};
 		mockRequest.body = { replyId: 'replyId', content: 'content' };
 		Reply.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 		});
 
 		await deleteReply(mockRequest, mockResponse, mockNext);
@@ -377,7 +395,7 @@ describe('Delete a reply', () => {
 		};
 		mockRequest.body = { replyId: 'replyId', content: 'content' };
 		Reply.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: '_id' },
+			createdBy: '_id',
 			delete: jest.fn(),
 		});
 

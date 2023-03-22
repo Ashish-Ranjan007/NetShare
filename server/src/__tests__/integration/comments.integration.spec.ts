@@ -58,12 +58,10 @@ describe('Integration tests for like comments route', () => {
 				notifications: [],
 				save: jest.fn(),
 			});
-
 		const response = await request(app)
 			.post('/api/comments/like')
 			.set('Authorization', 'Bearer token')
 			.send({ commentId: 'commentId' });
-
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toEqual({
 			success: true,
@@ -194,12 +192,17 @@ describe('Integration tests for reply to comments route', () => {
 			replies: [],
 			repliesCount: 0,
 			postId: 'postId',
-			createdBy: { id: 'id' },
+			createdBy: 'id',
 			save: jest.fn(),
 		}));
-		Reply.create = jest.fn().mockResolvedValueOnce({
+		Reply.create = jest.fn().mockImplementationOnce(() => ({
 			_id: '_id',
-		});
+			populate: jest.fn().mockResolvedValueOnce({
+				_id: '_id',
+				username: 'username',
+				profilePic: 'profilePic',
+			}),
+		}));
 		Post.findById = jest.fn().mockResolvedValueOnce({
 			commentsCount: 0,
 			save: jest.fn(),
@@ -289,16 +292,22 @@ describe('Integration tests for update comments route', () => {
 			username: 'username',
 			profilePic: 'profilePic',
 		});
-		Comment.findById = jest.fn().mockResolvedValueOnce({
-			likedBy: [],
-			replies: [],
-			repliesCount: 0,
-			createdBy: { id: 'userId' },
-			content: '',
-			updatedAt: null,
-			save: jest.fn(),
-			toObject: jest.fn(),
-		});
+		Comment.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					likedBy: [],
+					createdBy: {
+						_id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+					content: '',
+					updatedAt: new Date(),
+					save: jest.fn(),
+					toObject: jest.fn(),
+				}),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/comments/update')
@@ -319,7 +328,11 @@ describe('Integration tests for update comments route', () => {
 	});
 
 	it('POST /api/comments/update - failure if provided commentId is invalid', async () => {
-		Comment.findById = jest.fn().mockResolvedValueOnce(false);
+		Comment.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce(null),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/comments/update')
@@ -331,14 +344,18 @@ describe('Integration tests for update comments route', () => {
 	});
 
 	it('POST /api/comments/update - failure if creator of comment is not user', async () => {
-		Comment.findById = jest.fn().mockResolvedValueOnce({
-			replies: [],
-			repliesCount: 0,
-			createdBy: { id: 'id' },
-			save: jest.fn(),
-			content: '',
-			updatedAt: Date.now(),
-		});
+		Comment.findById = jest.fn().mockImplementationOnce(() => ({
+			select: jest.fn().mockImplementationOnce(() => ({
+				populate: jest.fn().mockResolvedValueOnce({
+					replies: [],
+					repliesCount: 0,
+					createdBy: { _id: 'id' },
+					save: jest.fn(),
+					content: '',
+					updatedAt: Date.now(),
+				}),
+			})),
+		}));
 
 		const response = await request(app)
 			.post('/api/comments/update')
@@ -353,7 +370,7 @@ describe('Integration tests for update comments route', () => {
 describe('Integration tests for delete comments route', () => {
 	it('DELETE /api/comments/delete - success - delete a comment', async () => {
 		Comment.findById = jest.fn().mockResolvedValueOnce({
-			createdBy: { id: 'userId' },
+			createdBy: 'userId',
 			delete: jest.fn(),
 		});
 
@@ -409,8 +426,10 @@ describe('Integration tests for getReplies of comments route', () => {
 			replies: [],
 		});
 		Reply.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				lean: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					lean: jest.fn().mockResolvedValueOnce([]),
+				})),
 			})),
 		}));
 

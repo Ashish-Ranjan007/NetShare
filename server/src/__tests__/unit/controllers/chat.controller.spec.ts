@@ -43,20 +43,19 @@ describe('Fetch chats', () => {
 	it('should return all the chats user is invloved in', async () => {
 		mockRequest.query = {};
 		const mockResponse: any = { status: jest.fn() };
-
 		Chat.count = jest.fn().mockResolvedValueOnce(0);
 		Chat.find = jest.fn().mockImplementationOnce(() => ({
-			sort: jest.fn().mockImplementationOnce(() => ({
-				skip: jest.fn().mockImplementationOnce(() => ({
-					limit: jest.fn().mockImplementationOnce(() => ({
-						populate: jest.fn().mockResolvedValueOnce([]),
+			populate: jest.fn().mockImplementationOnce(() => ({
+				sort: jest.fn().mockImplementationOnce(() => ({
+					skip: jest.fn().mockImplementationOnce(() => ({
+						limit: jest.fn().mockImplementationOnce(() => ({
+							populate: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			})),
 		}));
-
 		await fetchAllChats(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -91,7 +90,6 @@ describe('Create peer-to-peer chat', () => {
 		});
 
 		await createChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Can only chat with friends', 400)
 		);
@@ -104,18 +102,13 @@ describe('Create peer-to-peer chat', () => {
 			_id: '_id',
 			username: 'username',
 			profilePic: 'profilePic',
-			friends: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			friends: ['userId'],
 		});
-		Chat.find = jest.fn().mockResolvedValueOnce([{}]);
+		Chat.find = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce([{}]),
+		}));
 
 		await createChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 
@@ -127,18 +120,16 @@ describe('Create peer-to-peer chat', () => {
 			_id: '_id',
 			username: 'username',
 			profilePic: 'profilePic',
-			friends: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			friends: ['userId'],
 		});
-		Chat.find = jest.fn().mockResolvedValueOnce([]);
+		Chat.find = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce([]),
+		}));
+		Chat.create = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce({}),
+		}));
 
 		await createChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(201);
 	});
 });
@@ -180,21 +171,9 @@ describe('Create a group chat', () => {
 				username: 'username',
 				profilePic: 'profilePic',
 				friends: [
-					{
-						id: '63a29bb60eeb6c7e7e415c42',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-					{
-						id: '63a29bb60eeb6c7e7e415c48',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
-					{
-						id: '63a29bb60eeb6c7e7e415c49',
-						username: 'username',
-						profilePic: 'profilePic',
-					},
+					'63a29bb60eeb6c7e7e415c42',
+					'63a29bb60eeb6c7e7e415c48',
+					'63a29bb60eeb6c7e7e415c49',
 				],
 			},
 		} as Request;
@@ -203,18 +182,13 @@ describe('Create a group chat', () => {
 			_id: x,
 			username: 'username',
 			profilePic: 'profilePic',
-			friends: [
-				{
-					id: '63a29bb60eeb6c7e7e415d42',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			friends: ['63a29bb60eeb6c7e7e415d42'],
 		}));
-		Chat.create = jest.fn().mockResolvedValueOnce({});
+		Chat.create = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce({}),
+		}));
 
 		await createGroupChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(201);
 	});
 });
@@ -233,7 +207,9 @@ describe('Rename group chat', () => {
 
 	it('should throw an error if provided chatId does not exist or is not a group chat', async () => {
 		mockRequest.body = { newName: 'newName', chatId: 'chatId' };
-		Chat.findById = jest.fn().mockResolvedValueOnce(null);
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockResolvedValueOnce(null),
+		}));
 		await renameGroupChat(mockRequest, mockResponse, mockNext);
 
 		expect(mockNext).toHaveBeenCalledWith(
@@ -243,11 +219,13 @@ describe('Rename group chat', () => {
 
 	it('should throw an error if current user is not an admin', async () => {
 		mockRequest.body = { newName: 'newName', chatId: 'chatId' };
-		Chat.findById = jest
-			.fn()
-			.mockResolvedValueOnce({ isGroup: true, admins: [] });
-		await renameGroupChat(mockRequest, mockResponse, mockNext);
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest
+				.fn()
+				.mockResolvedValueOnce({ isGroup: true, admins: [] }),
+		}));
 
+		await renameGroupChat(mockRequest, mockResponse, mockNext);
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Not authorized to perform this operation', 400)
 		);
@@ -256,20 +234,22 @@ describe('Rename group chat', () => {
 	it('should rename the chat and return a status code of 200', async () => {
 		const mockResponse: any = { status: jest.fn() };
 		mockRequest.body = { newName: 'newName', chatId: 'chatId' };
-		Chat.findById = jest.fn().mockResolvedValueOnce({
-			name: 'name',
-			save: jest.fn().mockResolvedValueOnce(null),
-			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-		});
-		await renameGroupChat(mockRequest, mockResponse, mockNext);
+		Chat.findById = jest.fn().mockImplementationOnce(() => ({
+			populate: jest.fn().mockImplementationOnce(() => ({
+				name: 'name',
+				save: jest.fn().mockResolvedValueOnce(null),
+				isGroup: true,
+				admins: [
+					{
+						_id: 'userId',
+						username: 'username',
+						profilePic: 'profilePic',
+					},
+				],
+			})),
+		}));
 
+		await renameGroupChat(mockRequest, mockResponse, mockNext);
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -317,13 +297,7 @@ describe('Add a new member', () => {
 		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 		});
 
 		await addMember(mockRequest, mockResponse, mockNext);
@@ -336,30 +310,12 @@ describe('Add a new member', () => {
 	it('should throw an error if user is already a member', async () => {
 		mockRequest.body = { chatId: 'chatId', userId: 'userId' };
 		User.findById = jest.fn().mockResolvedValueOnce({
-			friends: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			friends: ['userId'],
 		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId'],
 		});
 
 		await addMember(mockRequest, mockResponse, mockNext);
@@ -376,30 +332,18 @@ describe('Add a new member', () => {
 			_id: 'userId',
 			username: 'username',
 			profilePic: 'profilePic',
-			friends: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			friends: ['userId'],
 		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			save: jest.fn(),
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			members: [],
 			unreadMessages: [],
+			populate: jest.fn(),
 		});
 
 		await addMember(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -440,23 +384,11 @@ describe('Remove a member', () => {
 		mockRequest.body = { chatId: 'chatId', memberId: 'memberId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId', 'memberId'],
 			members: [],
 		});
 
 		await removeMember(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Cannot remove an admin', 400)
 		);
@@ -467,26 +399,13 @@ describe('Remove a member', () => {
 		mockRequest.body = { chatId: 'chatId', memberId: 'userId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId'],
 			unreadMessages: [{ userId: 'userId', newMessage: 0 }],
 			delete: jest.fn(),
 		});
 
 		await removeMember(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 
@@ -495,34 +414,17 @@ describe('Remove a member', () => {
 		mockRequest.body = { chatId: 'chatId', memberId: 'userId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId', 'memberId'],
 			unreadMessages: [
 				{ userId: 'userId', newMessages: 0 },
 				{ userId: 'memberId', newMessages: 0 },
 			],
 			save: jest.fn(),
+			populate: jest.fn(),
 		});
 
 		await removeMember(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -568,18 +470,11 @@ describe('Add an admin', () => {
 		User.findById = jest.fn().mockResolvedValueOnce({});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			members: [],
 		});
 
 		await addAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Admins of a group have to be members first', 400)
 		);
@@ -590,24 +485,11 @@ describe('Add an admin', () => {
 		User.findById = jest.fn().mockResolvedValueOnce({});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId'],
 		});
 
 		await addAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provided userId is already an admin', 400)
 		);
@@ -617,31 +499,19 @@ describe('Add an admin', () => {
 		const mockResponse: any = { status: jest.fn() };
 		mockRequest.body = { userId: 'memberId', chatId: 'chatId' };
 		User.findById = jest.fn().mockResolvedValueOnce({
-			id: 'memberId',
+			_id: 'memberId',
 			username: 'username',
 			profilePic: 'profilePic',
 		});
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['memberId'],
 			save: jest.fn(),
+			populate: jest.fn(),
 		});
 
 		await addAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -674,7 +544,6 @@ describe('Remove an admin', () => {
 		});
 
 		await removeAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Not authorized to perform this operation', 400)
 		);
@@ -685,30 +554,13 @@ describe('Remove an admin', () => {
 		mockRequest.body = { chatId: 'chatId', adminId: 'userId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
-			members: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'memberId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
+			members: ['userId', 'memberId'],
 			save: jest.fn(),
+			populate: jest.fn(),
 		});
 
 		await removeAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 
@@ -717,23 +569,12 @@ describe('Remove an admin', () => {
 		mockRequest.body = { chatId: 'chatId', adminId: 'adminId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-				{
-					id: 'adminId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId', 'adminId'],
 			save: jest.fn(),
+			populate: jest.fn(),
 		});
 
 		await removeAdmin(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -741,7 +582,6 @@ describe('Remove an admin', () => {
 describe('Set display picture of a group', () => {
 	it('should throw an error if chatId or displayPictureUrl is not provided', async () => {
 		await setDisplayPicture(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provide chatId and displayPicture url', 400)
 		);
@@ -755,7 +595,6 @@ describe('Set display picture of a group', () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce(null);
 
 		await setDisplayPicture(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provided chatId is invalid', 400)
 		);
@@ -772,7 +611,6 @@ describe('Set display picture of a group', () => {
 		});
 
 		await setDisplayPicture(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Not authorized to perform this operation', 400)
 		);
@@ -786,19 +624,13 @@ describe('Set display picture of a group', () => {
 		};
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			displayPicture: '',
 			save: jest.fn(),
+			populate: jest.fn(),
 		});
 
 		await setDisplayPicture(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });
@@ -806,8 +638,8 @@ describe('Set display picture of a group', () => {
 describe('Delete a chat', () => {
 	it('should throw an error if chatId is not provided', async () => {
 		mockRequest.body = {};
-		await deleteChat(mockRequest, mockResponse, mockNext);
 
+		await deleteChat(mockRequest, mockResponse, mockNext);
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provide a chatId', 400)
 		);
@@ -818,7 +650,6 @@ describe('Delete a chat', () => {
 		Chat.findById = jest.fn().mockResolvedValueOnce(null);
 
 		await deleteChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Provided chatId is invalid', 400)
 		);
@@ -832,7 +663,6 @@ describe('Delete a chat', () => {
 		});
 
 		await deleteChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler('Not authorized to perform this operation', 400)
 		);
@@ -846,7 +676,6 @@ describe('Delete a chat', () => {
 		});
 
 		await deleteChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockNext).toHaveBeenCalledWith(
 			new ErrorHandler(
 				'Only members are authorized for this operation',
@@ -860,18 +689,11 @@ describe('Delete a chat', () => {
 		mockRequest.body = { chatId: 'chatId' };
 		Chat.findById = jest.fn().mockResolvedValueOnce({
 			isGroup: true,
-			admins: [
-				{
-					id: 'userId',
-					username: 'username',
-					profilePic: 'profilePic',
-				},
-			],
+			admins: ['userId'],
 			delete: jest.fn(),
 		});
 
 		await deleteChat(mockRequest, mockResponse, mockNext);
-
 		expect(mockResponse.status).toHaveBeenCalledWith(200);
 	});
 });

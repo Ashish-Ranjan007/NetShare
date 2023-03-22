@@ -37,16 +37,16 @@ describe('Integration tests for get notifications route', () => {
 			})
 			.mockImplementationOnce(() => ({
 				select: jest.fn().mockImplementationOnce(() => ({
-					sort: jest.fn().mockImplementationOnce(() => ({
-						then: jest.fn().mockResolvedValueOnce([]),
+					populate: jest.fn().mockImplementationOnce(() => ({
+						sort: jest.fn().mockImplementationOnce(() => ({
+							then: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			}));
-
 		const response = await request(app)
 			.get('/api/notifications')
 			.set('Authorization', 'Bearer Token');
-
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toEqual({
 			success: true,
@@ -65,8 +65,10 @@ describe('Integration tests for get notificationHistory route', () => {
 			})
 			.mockImplementationOnce(() => ({
 				select: jest.fn().mockImplementationOnce(() => ({
-					sort: jest.fn().mockImplementationOnce(() => ({
-						then: jest.fn().mockResolvedValueOnce([]),
+					populate: jest.fn().mockImplementationOnce(() => ({
+						sort: jest.fn().mockImplementationOnce(() => ({
+							then: jest.fn().mockResolvedValueOnce([]),
+						})),
 					})),
 				})),
 			}));

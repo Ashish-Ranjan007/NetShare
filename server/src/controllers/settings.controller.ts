@@ -3,28 +3,20 @@ import { NextFunction, Request, Response } from 'express';
 import { User } from '../models/User.model';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
+import { getUserObject } from '../utils/getUserObject';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 
 export const editProfile = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const {
-			userId,
-			profilePic,
-			firstname,
-			lastname,
-			bio,
-			dateOfBirth,
-			gender,
-		} = req.body;
+		const { profilePic, firstname, lastname, bio, dateOfBirth, gender } =
+			req.body;
 
-		if (!userId) {
-			return next(new ErrorHandler('No userId is provided', 400));
-		}
-
-		const user = await User.findById(userId);
-
+		const user = await User.findById(req.user._id).populate({
+			path: 'friends followers followings recentSearches',
+			select: '_id username profilePic',
+		});
 		if (!user) {
-			return next(new ErrorHandler('Invalid userId', 400));
+			return next(new ErrorHandler('Invalid user', 400));
 		}
 
 		// change profile picture
@@ -61,26 +53,7 @@ export const editProfile = catchAsyncErrors(
 
 		res.status(200).json(
 			new ResponseData(true, {
-				userObj: {
-					id: user._id.toString(),
-					bio: user.bio,
-					email: user.email,
-					gender: user.gender,
-					friends: user.friends,
-					username: user.username,
-					firstname: user.firstname,
-					lastname: user.lastname,
-					dateOfBirth: user.dateOfBirth,
-					profilePic: user.profilePic,
-					postsCount: user.postsCount,
-					friendsCount: user.friendsCount,
-					followersCount: user.followersCount,
-					followingsCount: user.followingsCount,
-					followers: user.followers.slice(0, 10),
-					followings: user.followings.slice(0, 10),
-					notifications: user.notificationCount,
-					recentSearches: user.recentSearches.slice(0, 10),
-				},
+				userObj: getUserObject(user),
 			})
 		);
 	}

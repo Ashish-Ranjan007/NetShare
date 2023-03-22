@@ -19,12 +19,10 @@ export const getFeeds = catchAsyncErrors(
 		const postsPerPage = 20;
 		const page = parseInt(req.query.page as string) || 0;
 
-		const requiredUserIds = [...user.followings, ...user.friends].map(
-			(elem) => elem.id
-		);
+		const requiredUserIds = [...user.followings, ...user.friends];
 
 		const totalResults = await Post.count({
-			'createdBy.id': { $in: requiredUserIds },
+			createdBy: { $in: requiredUserIds },
 		});
 
 		const hasPrev = page === 0 ? false : true;
@@ -35,10 +33,11 @@ export const getFeeds = catchAsyncErrors(
 
 		const posts = await Post.find(
 			{
-				'createdBy.id': { $in: requiredUserIds },
+				createdBy: { $in: requiredUserIds },
 			},
 			{ comments: 0 }
 		)
+			.populate({ path: 'createdBy', select: '_id username profilePic' })
 			.sort({ _id: -1 })
 			.skip(page * postsPerPage)
 			.limit(postsPerPage)
@@ -47,7 +46,7 @@ export const getFeeds = catchAsyncErrors(
 		posts.forEach((post) => {
 			if (
 				post.likedBy.find(
-					(userId) => userId === req.user._id.toString()
+					(userId) => userId.toString() === req.user._id.toString()
 				)
 			) {
 				(post as any).isLiked = true;

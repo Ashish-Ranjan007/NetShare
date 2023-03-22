@@ -18,28 +18,25 @@ export const likeReply = catchAsyncErrors(
 		}
 
 		const reply = await Reply.findById(replyId);
-
 		if (!reply) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
 		// if reply is already liked
 		const isLiked = reply.likedBy.find(
-			(userId) => userId === req.user._id.toString()
+			(userId) => userId.toString() === req.user._id.toString()
 		);
-
 		if (isLiked) {
 			return next(new ErrorHandler('Reply is already liked', 400));
 		}
 
 		// push userId into likedBy field of reply
-		reply.likedBy.push(req.user._id.toString());
+		reply.likedBy.push(req.user._id);
 
 		// increase likes count of reply
 		reply.likes += 1;
 
-		const commentCreator = await User.findById(reply.createdBy.id);
-
+		const commentCreator = await User.findById(reply.createdBy);
 		if (!commentCreator) {
 			return next(
 				new ErrorHandler('Creator of comment does not exist', 400)
@@ -48,14 +45,10 @@ export const likeReply = catchAsyncErrors(
 
 		// notify the creator of reply
 		commentCreator.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'liked',
 			contentType: 'reply',
-			contentId: reply._id.toString(),
+			contentId: reply._id,
 			time: new Date(),
 		});
 		commentCreator.notificationCount++;
@@ -77,23 +70,21 @@ export const unlikeReply = catchAsyncErrors(
 		}
 
 		const reply = await Reply.findById(replyId);
-
 		if (!reply) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
 		// if reply is not already liked
 		const isLiked = reply.likedBy.find(
-			(userId) => userId === req.user._id.toString()
+			(userId) => userId.toString() === req.user._id.toString()
 		);
-
 		if (!isLiked) {
 			return next(new ErrorHandler('Reply is not already liked', 400));
 		}
 
 		// remove userId from likedBy field of reply
 		reply.likedBy = reply.likedBy.filter(
-			(userId) => userId !== req.user._id.toString()
+			(userId) => userId.toString() !== req.user._id.toString()
 		);
 
 		// decrease likes count of reply
@@ -116,34 +107,27 @@ export const replyToReply = catchAsyncErrors(
 
 		const reply = await Reply.findById(replyId);
 		const comment = await Comment.findById(commentId);
-
 		if (!reply || !comment) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
 		// create a reply
 		const newReply = await Reply.create({
-			createdBy: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			createdBy: req.user._id,
 			repliedTo: {
 				replyId: replyId,
-				username: reply.createdBy.username,
 			},
 			commentId: commentId,
 			content: content,
 		});
 
 		// insert reply into comment's replies field
-		comment.replies.push(newReply._id.toString());
+		comment.replies.push(newReply._id);
 
 		// increase repliesCount of comment
 		comment.repliesCount += 1;
 
 		const post = await Post.findById(comment.postId);
-
 		if (!post) {
 			return next(new ErrorHandler('Bad Request', 400));
 		}
@@ -151,9 +135,8 @@ export const replyToReply = catchAsyncErrors(
 		// increase commentsCount of post
 		post.commentsCount += 1;
 
-		const replyCreator = await User.findById(reply.createdBy.id);
-		const commentCreator = await User.findById(comment.createdBy.id);
-
+		const replyCreator = await User.findById(reply.createdBy);
+		const commentCreator = await User.findById(comment.createdBy);
 		if (!replyCreator || !commentCreator) {
 			return next(
 				new ErrorHandler('Creator of comment does not exist', 400)
@@ -162,36 +145,37 @@ export const replyToReply = catchAsyncErrors(
 
 		// notify the creator of provided replyId
 		replyCreator.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'replied',
 			contentType: 'reply',
-			contentId: reply._id.toString(),
-			replyId: newReply._id.toString(),
+			contentId: reply._id,
+			replyId: newReply._id,
 			time: new Date(),
 		});
 		replyCreator.notificationCount++;
 
 		// notify the creator of the provided commentId
 		commentCreator.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'replied',
 			contentType: 'comment',
-			contentId: comment._id.toString(),
-			replyId: reply._id.toString(),
+			contentId: comment._id,
+			replyId: reply._id,
 			time: new Date(),
 		});
 		commentCreator.notificationCount++;
 
+		// Populate createdBy field of Reply
+		await newReply.populate({
+			path: 'createdBy',
+			select: '_id username profilePic',
+		});
+
+		newReply.repliedTo.username = replyCreator.username;
+
 		await post.save();
 		await comment.save();
+		await newReply.save();
 		await replyCreator.save();
 		await commentCreator.save();
 
@@ -208,13 +192,17 @@ export const updateReply = catchAsyncErrors(
 			return next(new ErrorHandler('Bad Request', 400));
 		}
 
-		const reply = await Reply.findById(replyId);
-
+		const reply = await Reply.findById(replyId)
+			.select('-likedBy')
+			.populate({
+				path: 'createdBy',
+				select: '_id username profilePic',
+			});
 		if (!reply) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
-		if (reply.createdBy.id !== req.user._id.toString()) {
+		if (reply.createdBy._id.toString() !== req.user._id.toString()) {
 			return next(new ErrorHandler('Unauthorized', 401));
 		}
 
@@ -240,12 +228,11 @@ export const deleteReply = catchAsyncErrors(
 		}
 
 		const reply = await Reply.findById(replyId);
-
 		if (!reply) {
 			return next(new ErrorHandler('Resource does not exist', 404));
 		}
 
-		if (reply.createdBy.id !== req.user._id.toString()) {
+		if (reply.createdBy.toString() !== req.user._id.toString()) {
 			return next(new ErrorHandler('Unauthorized', 401));
 		}
 

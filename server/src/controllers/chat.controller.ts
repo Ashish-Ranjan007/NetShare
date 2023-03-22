@@ -1,3 +1,4 @@
+import mongoose, { Types } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
 
 import { Chat } from '../models/Chat.model';
@@ -5,7 +6,6 @@ import { User } from '../models/User.model';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
-import mongoose, { Types } from 'mongoose';
 
 // Fetch all chats user is involved in
 export const fetchAllChats = catchAsyncErrors(
@@ -15,7 +15,7 @@ export const fetchAllChats = catchAsyncErrors(
 
 		// Count total results
 		const totalResults = await Chat.count({
-			members: { $elemMatch: { id: req.user._id.toString() } },
+			members: { $in: [req.user._id] },
 		});
 
 		const hasPrev = page === 0 ? false : true;
@@ -27,8 +27,12 @@ export const fetchAllChats = catchAsyncErrors(
 		// Query all chats that has currentUser
 		// Sort it in descending order
 		const chats = await Chat.find({
-			members: { $elemMatch: { id: req.user._id.toString() } },
+			members: { $in: [req.user._id] },
 		})
+			.populate({
+				path: 'members admins createdBy',
+				select: '_id username profilePic',
+			})
 			.sort({ updatedAt: -1 })
 			.skip(page * chatsPerPage)
 			.limit(chatsPerPage)
@@ -65,32 +69,24 @@ export const createChat = catchAsyncErrors(
 
 		// Can only chat with friends
 		const isFriend = targetUser.friends.find(
-			(friend) => friend.id === req.user._id.toString()
+			(friend) => friend.toString() === req.user._id.toString()
 		);
 		if (!isFriend) {
 			return next(new ErrorHandler('Can only chat with friends', 400));
 		}
 
 		// Build members array
-		const members = [
-			{
-				id: req.user._id.toString(),
-				profilePic: req.user.profilePic,
-				username: req.user.username,
-			},
-			{
-				id: targetUser._id.toString(),
-				profilePic: targetUser.profilePic,
-				username: targetUser.username,
-			},
-		];
+		const members = [req.user._id, targetUser._id];
 
 		// Return if chat already exist
 		const chat = await Chat.find({
 			$and: [
 				{ isGroup: false },
-				{ 'members.id': { $all: [members[0].id, members[1].id] } },
+				{ members: { $all: [members[0], members[1]] } },
 			],
+		}).populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
 		});
 		if (chat.length > 0) {
 			// Response
@@ -105,9 +101,15 @@ export const createChat = catchAsyncErrors(
 			members: members,
 			name: 'direct message',
 			unreadMessages: [
-				{ userId: members[0].id, newMessages: 0 },
-				{ userId: members[1].id, newMessages: 0 },
+				{ userId: members[0], newMessages: 0 },
+				{ userId: members[1], newMessages: 0 },
 			],
+		});
+
+		// Populate User reference fields
+		await newChat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
 		});
 
 		// Response
@@ -120,14 +122,7 @@ export const createGroupChat = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const { name, userIds, displayPictureUrl } = req.body;
 
-		const currentUser = {
-			id: req.user._id.toString(),
-			profilePic: req.user.profilePic,
-			username: req.user.username,
-		};
-
-		const members: { id: string; username: string; profilePic: string }[] =
-			[];
+		const members: Types.ObjectId[] = [];
 		const unreadMessages: {
 			userId: mongoose.Types.ObjectId;
 			newMessages: number;
@@ -145,7 +140,7 @@ export const createGroupChat = catchAsyncErrors(
 
 			// Can only add friends to a group
 			const isFriend = user.friends.find(
-				(friend) => friend.id === req.user._id.toString()
+				(friend) => friend.toString() === req.user._id.toString()
 			);
 			if (!isFriend) {
 				return next(
@@ -154,11 +149,7 @@ export const createGroupChat = catchAsyncErrors(
 			}
 
 			// Push user into members array
-			members.push({
-				id: user._id.toString(),
-				username: user.username,
-				profilePic: user.profilePic,
-			});
+			members.push(user._id);
 			// Push user into unreadMessages array
 			unreadMessages.push({
 				userId: user._id,
@@ -167,10 +158,10 @@ export const createGroupChat = catchAsyncErrors(
 		}
 
 		// Push current user into members array
-		members.push(currentUser);
+		members.push(req.user._id);
 		// Push current user into unreadMessages array
 		unreadMessages.push({
-			userId: new Types.ObjectId(req.user._id),
+			userId: req.user._id,
 			newMessages: 0,
 		});
 
@@ -179,10 +170,16 @@ export const createGroupChat = catchAsyncErrors(
 			isGroup: true,
 			name: name,
 			members: members,
-			createdBy: currentUser,
-			admins: [currentUser],
+			createdBy: req.user._id,
+			admins: [req.user._id],
 			unreadMessages: unreadMessages,
 			displayPicture: displayPictureUrl,
+		});
+
+		// Populate User reference fields
+		await groupChat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
 		});
 
 		// Response
@@ -206,14 +203,17 @@ export const renameGroupChat = catchAsyncErrors(
 		}
 
 		// Check if chatId is valid
-		const groupChat = await Chat.findById(chatId);
+		const groupChat = await Chat.findById(chatId).populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 		if (!groupChat || !groupChat.isGroup) {
 			return next(new ErrorHandler('Invalid chatId is provided', 400));
 		}
 
 		// Only admins are authorized for this operation
 		const isAdmin = groupChat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin._id.toString() === req.user._id.toString()
 		);
 		if (!isAdmin) {
 			return next(
@@ -256,7 +256,7 @@ export const addMember = catchAsyncErrors(
 
 		// Only admins are authorized for this operation
 		const isAdmin = groupChat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin.toString() === req.user._id.toString()
 		);
 		if (!isAdmin) {
 			return next(
@@ -269,7 +269,7 @@ export const addMember = catchAsyncErrors(
 
 		// Can only add friends to the group
 		const isFriend = user.friends.find(
-			(friend) => friend.id === req.user._id.toString()
+			(friend) => friend.toString() === req.user._id.toString()
 		);
 		if (!isFriend) {
 			return next(
@@ -279,7 +279,7 @@ export const addMember = catchAsyncErrors(
 
 		// Check if provided user is already a member
 		const isMember = groupChat.members.find(
-			(member) => member.id === userId
+			(member) => member.toString() === userId
 		);
 		if (isMember) {
 			return next(
@@ -288,11 +288,7 @@ export const addMember = catchAsyncErrors(
 		}
 
 		// Add new user to the group
-		groupChat.members.push({
-			id: user._id.toString(),
-			username: user.username,
-			profilePic: user.profilePic,
-		});
+		groupChat.members.push(user._id);
 
 		// Add new member to the unreadMessages
 		groupChat.unreadMessages.push({
@@ -300,10 +296,70 @@ export const addMember = catchAsyncErrors(
 			newMessages: 0,
 		});
 
+		// Save chat
 		await groupChat.save();
+
+		// Populate User reference fields
+		await groupChat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat }));
+	}
+);
+
+// Exit Group
+export const exitGroup = catchAsyncErrors(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { chatId, memberId } = req.body;
+
+		// Validate request body
+		if (!chatId || !memberId) {
+			return next(new ErrorHandler('Provide a chatId and memberId', 400));
+		}
+
+		// Check if group chat exists
+		const groupChat = await Chat.findById(chatId);
+		if (!groupChat || !groupChat.isGroup) {
+			return next(new ErrorHandler('Provided chatId is invalid', 400));
+		}
+
+		// Only members are authorized to perform this operation
+		const isMember = groupChat.members.find(
+			(member) => member.toString() === memberId
+		);
+		if (!isMember) {
+			return next(
+				new ErrorHandler(
+					'Not authorized to perform this operation',
+					400
+				)
+			);
+		}
+
+		// Remove member from the group chat
+		groupChat.members = groupChat.members.filter(
+			(member) => member.toString() !== memberId
+		);
+
+		// Delete chat if members array is emptied after removal
+		if (groupChat.members.length === 0) {
+			/*
+				When a chat is deleted all the messages belonging to that chat is deleted too
+			*/
+			await groupChat.delete();
+
+			// Response
+			return res.status(200).json(new ResponseData(true));
+		}
+
+		// save groupChat
+		await groupChat.save();
+
+		// Response
+		res.status(200).json(new ResponseData(true));
 	}
 );
 
@@ -325,7 +381,7 @@ export const removeMember = catchAsyncErrors(
 
 		// Only admins are authorized for this operation
 		const isAdmin = groupChat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin.toString() === req.user._id.toString()
 		);
 		if (!isAdmin) {
 			return next(
@@ -338,7 +394,7 @@ export const removeMember = catchAsyncErrors(
 
 		// Cannot remove an admin from group unless its self
 		const memberIsAdmin = groupChat.admins.find(
-			(admin) => admin.id === memberId
+			(admin) => admin.toString() === memberId
 		);
 		if (memberIsAdmin && memberId !== req.user._id.toString()) {
 			return next(new ErrorHandler('Cannot remove an admin', 400));
@@ -346,10 +402,10 @@ export const removeMember = catchAsyncErrors(
 
 		// Remove member
 		groupChat.members = groupChat.members.filter(
-			(member) => member.id !== memberId
+			(member) => member.toString() !== memberId
 		);
 		groupChat.admins = groupChat.admins.filter(
-			(admin) => admin.id !== memberId
+			(admin) => admin.toString() !== memberId
 		);
 		groupChat.unreadMessages = groupChat.unreadMessages.filter(
 			(member) => member.userId.toString() !== memberId
@@ -357,7 +413,7 @@ export const removeMember = catchAsyncErrors(
 
 		// Delete chat if members array is emptied after removal
 		if (groupChat.members.length === 0) {
-			/* 
+			/*
 				When a chat is deleted all the messages belonging to that chat is deleted too
 			*/
 			await groupChat.delete();
@@ -372,6 +428,12 @@ export const removeMember = catchAsyncErrors(
 
 		// save groupChat
 		await groupChat.save();
+
+		// Populate User reference fields
+		await groupChat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat }));
@@ -399,7 +461,7 @@ export const addAdmin = catchAsyncErrors(
 
 		// Only admins are authorized for this operation
 		const isAdmin = chat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin.toString() === req.user._id.toString()
 		);
 		if (!isAdmin) {
 			return next(
@@ -412,7 +474,7 @@ export const addAdmin = catchAsyncErrors(
 
 		// Check if provided user is actually a member
 		const userIsMember = chat.members.find(
-			(member) => member.id === userId
+			(member) => member.toString() === userId
 		);
 		if (!userIsMember) {
 			return next(
@@ -424,7 +486,9 @@ export const addAdmin = catchAsyncErrors(
 		}
 
 		// Check if provided user is already an admin
-		const userIsAdmin = chat.admins.find((admin) => admin.id === userId);
+		const userIsAdmin = chat.admins.find(
+			(admin) => admin.toString() === userId
+		);
 		if (userIsAdmin) {
 			return next(
 				new ErrorHandler('Provided userId is already an admin', 400)
@@ -432,12 +496,14 @@ export const addAdmin = catchAsyncErrors(
 		}
 
 		// Add a new admin
-		chat.admins.push({
-			id: userId,
-			username: user.username,
-			profilePic: user.profilePic,
-		});
+		chat.admins.push(user._id);
 		await chat.save();
+
+		// Populate User reference fields
+		await chat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat: chat }));
@@ -462,7 +528,7 @@ export const removeAdmin = catchAsyncErrors(
 
 		// Only admins are authorized for this operation
 		const isAdmin = chat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin.toString() === req.user._id.toString()
 		);
 		if (!isAdmin) {
 			return next(
@@ -474,12 +540,14 @@ export const removeAdmin = catchAsyncErrors(
 		}
 
 		// Remove admin
-		chat.admins = chat.admins.filter((admin) => admin.id !== adminId);
+		chat.admins = chat.admins.filter(
+			(admin) => admin.toString() !== adminId
+		);
 
 		// Make a member admin if admins array is emptied from removal
 		if (chat.admins.length === 0) {
 			// Check to see if we don't make admin the same users we just removed
-			if (chat.members[0].id === adminId) {
+			if (chat.members[0].toString() === adminId) {
 				chat.admins.push(chat.members[1]);
 			} else {
 				chat.admins.push(chat.members[0]);
@@ -488,6 +556,12 @@ export const removeAdmin = catchAsyncErrors(
 
 		// Save chat
 		await chat.save();
+
+		// Populate User reference fields
+		await chat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat: chat }));
@@ -514,7 +588,7 @@ export const setDisplayPicture = catchAsyncErrors(
 
 		// Only admins are authorized for this operation
 		const isAdmin = chat.admins.find(
-			(admin) => admin.id === req.user._id.toString()
+			(admin) => admin.toString() === req.user._id.toString()
 		);
 
 		if (!isAdmin) {
@@ -529,6 +603,12 @@ export const setDisplayPicture = catchAsyncErrors(
 		// Set display picture
 		chat.displayPicture = displayPictureUrl;
 		await chat.save();
+
+		// Populate User reference fields
+		await chat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat: chat }));
@@ -553,7 +633,7 @@ export const resetUnreadMessages = catchAsyncErrors(
 
 		// Check if current user is a member of the chat
 		const isMember = chat.members.find(
-			(member) => member.id === req.user._id.toString()
+			(member) => member.toString() === req.user._id.toString()
 		);
 		if (!isMember) {
 			return next(
@@ -575,6 +655,12 @@ export const resetUnreadMessages = catchAsyncErrors(
 			}
 		}
 		await chat.save();
+
+		// Populate User reference fields
+		await chat.populate({
+			path: 'members admins createdBy',
+			select: '_id username profilePic',
+		});
 
 		// Response
 		res.status(200).json(new ResponseData(true, { groupChat: chat }));
@@ -600,7 +686,7 @@ export const deleteChat = catchAsyncErrors(
 		if (chat.isGroup) {
 			// Only admins are authorized for this operation
 			const isAdmin = chat.admins.find(
-				(admin) => admin.id === req.user._id.toString()
+				(admin) => admin.toString() === req.user._id.toString()
 			);
 			if (!isAdmin) {
 				return next(
@@ -613,7 +699,7 @@ export const deleteChat = catchAsyncErrors(
 		} else {
 			// Only members are authorized to delete a chat
 			const isMember = chat.members.find(
-				(member) => member.id === req.user._id.toString()
+				(member) => member.toString() === req.user._id.toString()
 			);
 			if (!isMember) {
 				return next(
@@ -625,7 +711,7 @@ export const deleteChat = catchAsyncErrors(
 			}
 		}
 
-		/* 
+		/*
 			When a chat is deleted all the messages belonging to that chat is deleted too
 		*/
 		// Delete chat

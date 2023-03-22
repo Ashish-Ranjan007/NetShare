@@ -5,6 +5,7 @@ import { verifyJWT } from '../utils/verifyJWT';
 import { sendToken } from '../utils/sendToken';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { ResponseData } from '../utils/ResponseData';
+import { getUserObject } from '../utils/getUserObject';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors';
 
 // Register a new user
@@ -53,6 +54,12 @@ export const login = catchAsyncErrors(
 			return next(new ErrorHandler('Invalid Credentials', 401));
 		}
 
+		// Populate friends, followers, followings and recentSearches
+		await user.populate({
+			path: 'friends followers followings recentSearches',
+			select: '_id username profilePic',
+		});
+
 		sendToken(user, 200, res);
 	}
 );
@@ -98,30 +105,17 @@ export const refreshToken = catchAsyncErrors(
 
 		const accessToken = user.getSignedToken();
 
+		// Populate friends, followers, followings and recentSearches
+		await user.populate({
+			path: 'friends followers followings recentSearches',
+			select: '_id username profilePic',
+		});
+
 		res.status(200).json(
 			new ResponseData(
 				true,
 				{
-					userObj: {
-						id: user._id.toString(),
-						bio: user.bio,
-						email: user.email,
-						gender: user.gender,
-						friends: user.friends,
-						username: user.username,
-						firstname: user.firstname,
-						lastname: user.lastname,
-						dateOfBirth: user.dateOfBirth,
-						profilePic: user.profilePic,
-						postsCount: user.postsCount,
-						friendsCount: user.friendsCount,
-						followersCount: user.followersCount,
-						followingsCount: user.followingsCount,
-						followers: user.followers.slice(0, 10),
-						followings: user.followings.slice(0, 10),
-						notifications: user.notificationCount,
-						recentSearches: user.recentSearches.slice(0, 10),
-					},
+					userObj: getUserObject(user),
 				},
 				'',
 				accessToken
@@ -224,7 +218,7 @@ export const postAddRecentSearch = catchAsyncErrors(
 			// Check if recentlySearchedUser is already in the recentSearches array of currentUser
 			for (let i = 0; i < currentUser.recentSearches.length; i++) {
 				if (
-					currentUser.recentSearches[i].id ===
+					currentUser.recentSearches[i].toString() ===
 					recentlySearchedUser._id.toString()
 				) {
 					return res.status(200).json(new ResponseData(true, {}));
@@ -237,14 +231,10 @@ export const postAddRecentSearch = catchAsyncErrors(
 			}
 
 			// Insert the new recentSearch at the start of the array
-			currentUser.recentSearches?.unshift({
-				id: recentlySearchedUser._id.toString(),
-				profilePic: recentlySearchedUser.profilePic,
-				username: recentlySearchedUser.username,
-			});
+			currentUser.recentSearches.unshift(recentlySearchedUser._id);
 
 			await currentUser.save();
-			res.status(201).json(new ResponseData(true, {}));
+			return res.status(201).json(new ResponseData(true, {}));
 		}
 
 		res.status(200).json(new ResponseData(true, {}));
@@ -270,38 +260,26 @@ export const follow = catchAsyncErrors(
 
 		// If User already follows target user return conflict error
 		for (let i = 0; i < user.followings.length; i++) {
-			if (user.followings[i].id === target._id.toString()) {
+			if (user.followings[i].toString() === target._id.toString()) {
 				return next(new ErrorHandler('User is already followed', 409));
 			}
 		}
 
 		// Push target user into user's followings array
-		user.followings.push({
-			id: target._id.toString(),
-			username: target.username,
-			profilePic: target.profilePic,
-		});
+		user.followings.push(target._id);
 
 		// increase followingsCount of user
 		user.followingsCount += 1;
 
 		// If target already follows user make them friends
 		for (let i = 0; i < user.followers.length; i++) {
-			if (user.followers[i].id === target._id.toString()) {
-				user.friends.push({
-					id: target._id.toString(),
-					username: target.username,
-					profilePic: target.profilePic,
-				});
+			if (user.followers[i].toString() === target._id.toString()) {
+				user.friends.push(target._id);
 
 				// increase friendsCount of user
 				user.friendsCount += 1;
 
-				target.friends.push({
-					id: user._id.toString(),
-					username: user.username,
-					profilePic: user.profilePic,
-				});
+				target.friends.push(user._id);
 
 				// increase friendsCount of target
 				target.friendsCount += 1;
@@ -314,19 +292,11 @@ export const follow = catchAsyncErrors(
 		await user.save();
 
 		// Push user into target user's followers array
-		target.followers.push({
-			id: user._id.toString(),
-			username: user.username,
-			profilePic: user.profilePic,
-		});
+		target.followers.push(user._id);
 
 		// notify target
 		target.notifications.push({
-			user: {
-				id: req.user._id.toString(),
-				username: req.user.username,
-				profilePic: req.user.profilePic,
-			},
+			user: req.user._id,
 			action: 'followed',
 			contentType: 'profile',
 			time: new Date(),
@@ -362,7 +332,7 @@ export const unFollow = catchAsyncErrors(
 
 		// If User doesnt already follows target user return conflict error
 		const newFollowingsArray = user.followings.filter(
-			(following) => following.id !== target._id.toString()
+			(following) => following.toString() !== target._id.toString()
 		);
 
 		if (newFollowingsArray.length === user.followings.length) {
@@ -377,7 +347,7 @@ export const unFollow = catchAsyncErrors(
 
 		// Remove target from user's friends array if present
 		user.friends = user.friends.filter((friend) => {
-			if (friend.id === target._id.toString()) {
+			if (friend.toString() === target._id.toString()) {
 				// decrease friendsCount of uset
 				user.friendsCount -= 1;
 
@@ -392,7 +362,7 @@ export const unFollow = catchAsyncErrors(
 
 		// Remove user from target user's followers array
 		target.followers = target.followers.filter((follower) => {
-			if (follower.id === user._id.toString()) {
+			if (follower.toString() === user._id.toString()) {
 				// decrease followersCount of target
 				target.followersCount -= 1;
 
@@ -404,7 +374,7 @@ export const unFollow = catchAsyncErrors(
 
 		// Remove user from target's friends array if present
 		target.friends = target.friends.filter((friend) => {
-			if (friend.id === user._id.toString()) {
+			if (friend.toString() === user._id.toString()) {
 				// decrease friendsCount of target
 				target.friendsCount -= 1;
 
@@ -426,7 +396,10 @@ export const getFollowers = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const { userId } = req.query;
 
-		const user = await User.findById(userId);
+		const user = await User.findById(userId).populate({
+			path: 'followers',
+			select: '_id profilePic username',
+		});
 
 		if (!user) {
 			return next(new ErrorHandler('Resource not found', 404));
@@ -458,7 +431,10 @@ export const getFollowings = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const { userId } = req.query;
 
-		const user = await User.findById(userId);
+		const user = await User.findById(userId).populate({
+			path: 'followings',
+			select: '_id profilePic username',
+		});
 
 		if (!user) {
 			return next(new ErrorHandler('Resource not found', 404));
@@ -490,28 +466,35 @@ export const getFriends = catchAsyncErrors(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const { searchTerm } = req.query;
 
-		if (!searchTerm || searchTerm.length === 0) {
-			const friends = await User.findById(req.user._id).select('friends');
+		let friends = await User.findById(req.user._id)
+			.select('friends')
+			.populate({
+				path: 'friends',
+				select: '_id profilePic username',
+			});
 
-			return res
-				.status(200)
-				.json(new ResponseData(true, { results: friends?.friends }));
+		if (!friends) {
+			return next(new ErrorHandler('Resource not found', 404));
 		}
 
-		const friends = await User.find({
-			_id: req.user._id,
-		}).then((doc) => {
-			return doc[0].friends.filter((friend) => {
-				const re = new RegExp(searchTerm.toString(), 'i');
+		// Return all friends if no searchTerm is provided
+		if (!searchTerm || searchTerm.length === 0) {
+			return res
+				.status(200)
+				.json(new ResponseData(true, { results: friends.friends }));
+		}
 
-				if (friend.username.match(re)) {
-					return true;
-				} else {
-					false;
-				}
-			});
+		// Filter friends against provided searchTerm
+		const result = friends.friends.filter((friend: any) => {
+			const re = new RegExp(searchTerm.toString(), 'i');
+
+			if (friend.username.match(re)) {
+				return true;
+			} else {
+				false;
+			}
 		});
 
-		res.status(200).json(new ResponseData(true, { results: friends }));
+		res.status(200).json(new ResponseData(true, { results: result }));
 	}
 );
