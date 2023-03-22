@@ -45,7 +45,7 @@ export const handlers = [
 							profilePic: '',
 							recentSearches: [
 								{
-									id: 'id',
+									_id: 'id',
 									username: 'username',
 									profilePic: 'profilePic',
 								},
@@ -117,7 +117,7 @@ export const handlers = [
 						results: [
 							{
 								profilePic: 'profilePic',
-								id: 'id',
+								_id: 'id',
 								username: 'username123',
 							},
 						],

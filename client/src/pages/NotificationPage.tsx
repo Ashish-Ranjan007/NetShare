@@ -255,7 +255,7 @@ const NotificationPage = () => {
 									<Box>
 										<Link
 											style={{ color: 'inherit' }}
-											to={`/profile/${notification.user.username}/${notification.user.id}`}
+											to={`/profile/${notification.user.username}/${notification.user._id}`}
 										>
 											{notification.user.username + ' '}
 										</Link>

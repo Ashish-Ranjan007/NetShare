@@ -28,7 +28,7 @@ const MessageBox = ({ socket }: { socket: Socket }) => {
 			return;
 		}
 
-		socket.emit('send_message', currentChat._id, content, auth.id);
+		socket.emit('send_message', currentChat._id, content, auth._id);
 		setContent('');
 		setShowEmojiPicker(false);
 	};

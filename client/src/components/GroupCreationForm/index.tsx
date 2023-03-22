@@ -55,7 +55,7 @@ const GroupCreationForm = ({ setOpen }: props) => {
 		}
 
 		// Build userIds array
-		const userIds = formData.users.map((user) => user.id);
+		const userIds = formData.users.map((user) => user._id);
 
 		try {
 			// Create group

@@ -13,6 +13,8 @@ const ProfilePage = () => {
 				paddingLeft: { sm: '16px' },
 				height: 'calc(100vh - 80px)',
 				overflowY: 'auto',
+				'&::-webkit-scrollbar': { display: 'none' },
+				scrollbarWidth: 'none',
 			}}
 		>
 			<UserProfileInfo username={username} />

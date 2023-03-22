@@ -2,7 +2,7 @@ import { ProfileReference } from '../../@types/responseType';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type AuthState = {
-	id: string;
+	_id: string;
 	bio: string;
 	email: string;
 	username: string;
@@ -25,7 +25,7 @@ export type AuthState = {
 };
 
 const initialState: AuthState = {
-	id: '',
+	_id: '',
 	bio: '',
 	email: '',
 	friends: [],

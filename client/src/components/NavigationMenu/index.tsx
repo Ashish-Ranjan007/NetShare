@@ -75,7 +75,7 @@ const NavigationMenu = (props: Props) => {
 		{
 			name: 'Profile',
 			icon: <Person />,
-			link: `/profile/${auth.username}/${auth.id}`,
+			link: `/profile/${auth.username}/${auth._id}`,
 		},
 	];
 

@@ -93,7 +93,7 @@ const Chats = () => {
 							name = chat.name;
 							displayPicture = chat.displayPicture;
 						} else {
-							if (chat.members[0].id === auth.id) {
+							if (chat.members[0]._id === auth._id) {
 								name = chat.members[1].username;
 								displayPicture = chat.members[1].profilePic;
 							} else {
@@ -125,7 +125,7 @@ const Chats = () => {
 										badgeContent={getUnreadMessages(
 											chats,
 											chat._id,
-											auth.id
+											auth._id
 										)}
 									>
 										<Avatar

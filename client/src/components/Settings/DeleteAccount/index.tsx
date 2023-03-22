@@ -43,7 +43,7 @@ const DeleteAccount = () => {
 				}/api/settings/delete-account`,
 				{
 					headers: { Authorization: `Bearer ${auth.accessToken}` },
-					data: { userId: auth.id, password: values.password },
+					data: { userId: auth._id, password: values.password },
 				}
 			);
 

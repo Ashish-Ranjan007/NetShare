@@ -113,6 +113,16 @@ const chatsApiSlice = apiSlice.injectEndpoints({
 				body: { chatId },
 			}),
 		}),
+		exitGroupChat: builder.mutation<
+			{ success: boolean; data: { groupChat: ChatType }; error: string },
+			{ chatId: string; memberId: string }
+		>({
+			query: ({ chatId, memberId }) => ({
+				url: '/chats/exit-group-chat',
+				method: 'POST',
+				body: { chatId, memberId },
+			}),
+		}),
 	}),
 });
 
@@ -128,4 +138,5 @@ export const {
 	useDeleteGroupChatMutation,
 	useDeleteChatMutation,
 	useResetUnreadMessagesMutation,
+	useExitGroupChatMutation,
 } = chatsApiSlice;

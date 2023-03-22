@@ -22,7 +22,7 @@ const initialState: PostState = {
 	likes: 0,
 	isLiked: false,
 	createdBy: {
-		id: '',
+		_id: '',
 		username: '',
 		profilePic: '',
 	},
@@ -64,6 +64,7 @@ const postSlice = createSlice({
 		},
 		addComment: (state, action: PayloadAction<CommentType>) => {
 			state.comments = [action.payload, ...state.comments];
+			console.log(state.comments);
 		},
 		setLikeComment: (
 			state,
@@ -89,6 +90,9 @@ const postSlice = createSlice({
 		replyToComment: (state, action: PayloadAction<{ index: number }>) => {
 			state.comments[action.payload.index].repliesCount += 1;
 		},
+		deletePost: (state) => {
+			state = initialState;
+		},
 	},
 });
 
@@ -102,6 +106,7 @@ export const {
 	deleteComment,
 	updateComment,
 	replyToComment,
+	deletePost,
 } = postSlice.actions;
 
 // export reducers

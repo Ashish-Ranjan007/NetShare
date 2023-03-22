@@ -65,7 +65,7 @@ const UserListModal = ({
 						{users.map((user) => (
 							<ListItem
 								onClick={() => onClose(false)}
-								key={user.id}
+								key={user._id}
 								sx={{
 									':hover': {
 										backgroundColor: '#eee',
@@ -74,7 +74,7 @@ const UserListModal = ({
 								}}
 							>
 								<Link
-									to={`/profile/${user.username}/${user.id}`}
+									to={`/profile/${user.username}/${user._id}`}
 									style={{
 										color: 'inherit',
 										display: 'flex',

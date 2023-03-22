@@ -45,7 +45,7 @@ const FriendsList = ({
 	setSelectedFriends,
 }: props) => {
 	const isSelected = (id: string): boolean => {
-		return selectedFriends.find((friend) => friend.id === id)
+		return selectedFriends.find((friend) => friend._id === id)
 			? true
 			: false;
 	};
@@ -53,7 +53,7 @@ const FriendsList = ({
 	const handleSelect = (checked: boolean, user: ProfileReference) => {
 		if (checked) {
 			setSelectedFriends((prev) => {
-				const result = prev.filter((friend) => friend.id !== user.id);
+				const result = prev.filter((friend) => friend._id !== user._id);
 				return result;
 			});
 		} else {
@@ -68,10 +68,10 @@ const FriendsList = ({
 		<Box sx={{ maxHeight: '500px', overflowY: 'auto', ...customScrollbar }}>
 			<List>
 				{friends.map((friend) => {
-					const checked = isSelected(friend.id);
+					const checked = isSelected(friend._id);
 					return (
 						<ListItem
-							key={friend.id}
+							key={friend._id}
 							secondaryAction={
 								<Checkbox
 									edge="end"

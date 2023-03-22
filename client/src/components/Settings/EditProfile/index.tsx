@@ -70,7 +70,7 @@ const EditProfile = () => {
 			}>(
 				`${import.meta.env.VITE_API_BASE_URL}/api/settings/profile`,
 				{
-					userId: auth.id,
+					userId: auth._id,
 					profilePic: profilePic,
 					firstname: values.firstname,
 					lastname: values.lastname,

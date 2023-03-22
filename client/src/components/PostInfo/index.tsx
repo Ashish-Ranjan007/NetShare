@@ -59,7 +59,7 @@ const PostInfo = () => {
 						src={post.createdBy.profilePic}
 					/>
 					<Link
-						to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
+						to={`/profile/${post.createdBy.username}/${post.createdBy._id}`}
 					>
 						<Typography
 							variant="body1"

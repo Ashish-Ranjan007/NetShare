@@ -1,5 +1,5 @@
 export type ProfileReference = {
-	id: string;
+	_id: string;
 	profilePic: string;
 	username: string;
 };
@@ -49,7 +49,7 @@ export type ChatType = {
 
 type DataType = {
 	userObj: {
-		id: string;
+		_id: string;
 		bio: string;
 		email: string;
 		firstname: string;

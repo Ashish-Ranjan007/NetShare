@@ -10,7 +10,7 @@ describe('Friends', () => {
 	beforeEach(() => {
 		store.dispatch(
 			setCredentials({
-				id: 'userid',
+				_id: 'userid',
 				bio: 'bio',
 				email: 'email@email.com',
 				username: 'username',
@@ -26,12 +26,12 @@ describe('Friends', () => {
 				recentSearches: [],
 				friends: [
 					{
-						id: 'id1',
+						_id: 'id1',
 						username: 'username1',
 						profilePic: '',
 					},
 					{
-						id: 'id2',
+						_id: 'id2',
 						username: 'username2',
 						profilePic: '',
 					},

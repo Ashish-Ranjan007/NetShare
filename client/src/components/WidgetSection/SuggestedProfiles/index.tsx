@@ -43,7 +43,7 @@ const SuggestedProfiles = () => {
 
 		if (returned.success) {
 			const updatedSuggestions = suggestedProfiles.filter(
-				(profile) => profile.id !== userId
+				(profile) => profile._id !== userId
 			);
 			dispatch(setSuggestedProfiles(updatedSuggestions));
 		}
@@ -64,7 +64,7 @@ const SuggestedProfiles = () => {
 					<List>
 						{suggestedProfiles.map((profile) => (
 							<ListItem
-								key={profile.id}
+								key={profile._id}
 								sx={{
 									transition: 'all 300ms ease',
 									display: 'flex',
@@ -80,7 +80,7 @@ const SuggestedProfiles = () => {
 									alt={`${profile.username}'s profile picture`}
 								/>
 								<Link
-									to={`/profile/${profile.username}/${profile.id}`}
+									to={`/profile/${profile.username}/${profile._id}`}
 									style={{
 										width: '100%',
 										color: 'inherit',
@@ -91,7 +91,7 @@ const SuggestedProfiles = () => {
 									{profile.username}
 								</Link>
 								<Button
-									onClick={() => handleFollow(profile.id)}
+									onClick={() => handleFollow(profile._id)}
 									variant="contained"
 									size="small"
 									sx={{ textTransform: 'capitalize' }}

@@ -124,7 +124,7 @@ const Messages = ({ socket }: { socket: Socket }) => {
 		}
 
 		// If currentChat is group and sender of the message is current user return false
-		if (message.sender._id === auth.id) {
+		if (message.sender._id === auth._id) {
 			return false;
 		}
 
@@ -204,7 +204,7 @@ const Messages = ({ socket }: { socket: Socket }) => {
 			>
 				{currentChat &&
 					messages.map((message, index) => (
-						<>
+						<div key={message._id}>
 							<Typography
 								sx={{
 									fontSize: '10px',
@@ -237,7 +237,7 @@ const Messages = ({ socket }: { socket: Socket }) => {
 										padding: '4px 16px 4px 8px',
 										borderRadius: '15px',
 										marginLeft:
-											message.sender._id === auth.id
+											message.sender._id === auth._id
 												? 'auto'
 												: '',
 									}}
@@ -274,7 +274,7 @@ const Messages = ({ socket }: { socket: Socket }) => {
 									</Typography>
 								</Box>
 							</ListItem>
-						</>
+						</div>
 					))}
 			</InfiniteScroll>
 		</List>

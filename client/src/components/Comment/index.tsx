@@ -81,6 +81,8 @@ const Comment = ({
 				}
 			);
 
+			console.log('replies fetchmore', result);
+
 			setReplies((prev) => prev.concat(result.data.data.replies));
 			setPage((prev) => prev + 1);
 			setHasMore(result.data.data.hasNext);
@@ -190,7 +192,7 @@ const Comment = ({
 					<Typography variant="body1" sx={{ fontWeight: '500' }}>
 						<Link
 							style={{ color: '#4E5D78' }}
-							to={comment.createdBy.username}
+							to={`/profile/${comment.createdBy.username}/${comment.createdBy._id}`}
 						>
 							{comment.createdBy.username}
 						</Link>
@@ -236,7 +238,7 @@ const Comment = ({
 					>
 						Reply
 					</Button>
-					{comment.createdBy.id === auth.id && (
+					{comment.createdBy._id === auth._id && (
 						<Button
 							color="inherit"
 							variant="text"
@@ -248,7 +250,7 @@ const Comment = ({
 							Edit
 						</Button>
 					)}
-					{comment.createdBy.id === auth.id && (
+					{comment.createdBy._id === auth._id && (
 						<Button
 							variant="text"
 							color="error"

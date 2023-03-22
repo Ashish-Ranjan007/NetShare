@@ -39,11 +39,11 @@ const DeleteGroup = () => {
 			return false;
 		}
 
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
+		return chat.admins.find((admin) => admin._id === userId) ? true : false;
 	};
 
 	const handleDeleteGroup = async () => {
-		if (!chat || !isAdmin(auth.id)) {
+		if (!chat || !isAdmin(auth._id)) {
 			return;
 		}
 
@@ -74,7 +74,7 @@ const DeleteGroup = () => {
 				}}
 				variant="outlined"
 				onClick={() => setOpenModal(true)}
-				disabled={isAdmin(auth.id) ? false : true}
+				disabled={isAdmin(auth._id) ? false : true}
 			>
 				Delete Group
 			</Button>

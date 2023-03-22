@@ -110,6 +110,16 @@ const postsApiSlice = apiSlice.injectEndpoints({
 				params: { postId: postId, page: page },
 			}),
 		}),
+		deletePost: builder.mutation<
+			{ success: boolean; data: {}; error: string },
+			{ postId: string }
+		>({
+			query: ({ postId }) => ({
+				url: '/posts/delete',
+				method: 'DELETE',
+				body: { postId: postId },
+			}),
+		}),
 	}),
 });
 
@@ -120,4 +130,5 @@ export const {
 	useUnlikePostMutation,
 	useAddCommentMutation,
 	useLazyGetPostByIdQuery,
+	useDeletePostMutation,
 } = postsApiSlice;

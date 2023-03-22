@@ -107,7 +107,7 @@ const SearchResultsPage = () => {
 								/>
 								<Link
 									style={{ color: 'inherit' }}
-									to={`/profile/${profile.username}/${profile.id}`}
+									to={`/profile/${profile.username}/${profile._id}`}
 								>
 									<Typography
 										color="inherit"

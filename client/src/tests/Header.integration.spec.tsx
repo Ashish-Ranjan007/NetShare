@@ -29,7 +29,7 @@ describe('Searchbar', () => {
 	it('should open a submenu of recent searches when searchbar is focused', async () => {
 		store.dispatch(
 			setCredentials({
-				id: 'userid',
+				_id: 'userid',
 				bio: 'bio',
 				email: 'email@email.com',
 				username: 'username',
@@ -45,12 +45,12 @@ describe('Searchbar', () => {
 				recentSearches: [],
 				friends: [
 					{
-						id: 'id1',
+						_id: 'id1',
 						username: 'username1',
 						profilePic: '',
 					},
 					{
-						id: 'id2',
+						_id: 'id2',
 						username: 'username2',
 						profilePic: '',
 					},
@@ -77,7 +77,7 @@ describe('Searchbar', () => {
 	it('should close the submenu of recent searches when user clicks outside', async () => {
 		store.dispatch(
 			setCredentials({
-				id: 'userid',
+				_id: 'userid',
 				bio: 'bio',
 				email: 'email@email.com',
 				username: 'username',
@@ -93,12 +93,12 @@ describe('Searchbar', () => {
 				recentSearches: [],
 				friends: [
 					{
-						id: 'id1',
+						_id: 'id1',
 						username: 'username1',
 						profilePic: '',
 					},
 					{
-						id: 'id2',
+						_id: 'id2',
 						username: 'username2',
 						profilePic: '',
 					},

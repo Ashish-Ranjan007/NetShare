@@ -41,6 +41,8 @@ const CommentSection = ({ post }: { post: PostType }) => {
 			content: comment,
 		}).unwrap();
 
+		console.log('result', result);
+
 		setComment('');
 		dispatch(addComment(result.data.comment));
 		setOpenAlert(true);

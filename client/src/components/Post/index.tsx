@@ -65,7 +65,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 	};
 
 	const handleUnFollow = async () => {
-		const returned = await postUnfollow(post.createdBy.id).unwrap();
+		const returned = await postUnfollow(post.createdBy._id).unwrap();
 
 		if (returned.success) {
 			setOpenAlert(true);
@@ -92,7 +92,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 				title={
 					<Link
 						style={{ color: 'inherit', fontWeight: '500' }}
-						to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
+						to={`/profile/${post.createdBy.username}/${post.createdBy._id}`}
 					>
 						{post.createdBy.username}
 					</Link>
@@ -104,7 +104,7 @@ const Post = ({ post, index }: { post: FeedType; index: number }) => {
 			</CardMedia>
 			<CardContent>
 				<Link
-					to={`/profile/${post.createdBy.username}/${post.createdBy.id}`}
+					to={`/profile/${post.createdBy.username}/${post.createdBy._id}`}
 					style={{ color: 'inherit' }}
 				>
 					<Typography component="span">

@@ -11,7 +11,7 @@ type props = {
 const SelectedFriends = ({ selectedFriends, setSelectedFriends }: props) => {
 	const handleRemoveSelection = (id: string) => {
 		setSelectedFriends((prev) => {
-			const result = prev.filter((prev) => prev.id !== id);
+			const result = prev.filter((prev) => prev._id !== id);
 			return result;
 		});
 	};
@@ -25,12 +25,12 @@ const SelectedFriends = ({ selectedFriends, setSelectedFriends }: props) => {
 						padding: '4px 8px',
 						margin: '2px',
 					}}
-					key={friend.id}
+					key={friend._id}
 					variant="contained"
 					color="inherit"
 					disableElevation
 					endIcon={<Close />}
-					onClick={() => handleRemoveSelection(friend.id)}
+					onClick={() => handleRemoveSelection(friend._id)}
 				>
 					{friend.username}
 				</Button>

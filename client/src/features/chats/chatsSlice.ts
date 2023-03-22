@@ -31,14 +31,17 @@ export const chatsSlice = createSlice({
 		addGroupMember: (state, action: PayloadAction<ChatType>) => {
 			state.chats = state.chats.map((chat) => {
 				if (chat._id === action.payload._id) {
-					return action.payload;
+					return {
+						...chat,
+						members: action.payload.members,
+					};
 				}
 
 				return chat;
 			});
 
 			if (state.currentChat) {
-				state.currentChat = action.payload;
+				state.currentChat.members = action.payload.members;
 			}
 		},
 		setDisplayPicture: (
@@ -109,7 +112,7 @@ export const chatsSlice = createSlice({
 			state.chats = state.chats.map((chat) => {
 				if (chat._id === action.payload.chatId) {
 					chat.admins = chat.admins.filter(
-						(admin) => admin.id !== action.payload.admin.id
+						(admin) => admin._id !== action.payload.admin._id
 					);
 				}
 
@@ -118,7 +121,7 @@ export const chatsSlice = createSlice({
 
 			if (state.currentChat) {
 				state.currentChat.admins = state.currentChat.admins.filter(
-					(admin) => admin.id !== action.payload.admin.id
+					(admin) => admin._id !== action.payload.admin._id
 				);
 			}
 		},
@@ -129,7 +132,7 @@ export const chatsSlice = createSlice({
 			state.chats = state.chats.map((chat) => {
 				if (chat._id === action.payload.chatId) {
 					chat.members = chat.members.filter(
-						(member) => member.id !== action.payload.member.id
+						(member) => member._id !== action.payload.member._id
 					);
 				}
 
@@ -138,7 +141,7 @@ export const chatsSlice = createSlice({
 
 			if (state.currentChat) {
 				state.currentChat.members = state.currentChat.members.filter(
-					(member) => member.id !== action.payload.member.id
+					(member) => member._id !== action.payload.member._id
 				);
 			}
 		},

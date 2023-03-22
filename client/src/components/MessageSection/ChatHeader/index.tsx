@@ -55,7 +55,7 @@ const ChatHeader = ({ typingUser }: { typingUser: string | null }) => {
 
 		let result: string;
 
-		if (currentChat.members[0].id === auth.id) {
+		if (currentChat.members[0]._id === auth._id) {
 			result = currentChat.members[1].profilePic;
 		} else {
 			result = currentChat.members[0].profilePic;
@@ -72,7 +72,7 @@ const ChatHeader = ({ typingUser }: { typingUser: string | null }) => {
 		}
 
 		let result: string;
-		if (currentChat.members[0].id === auth.id) {
+		if (currentChat.members[0]._id === auth._id) {
 			result = currentChat.members[1].username;
 		} else {
 			result = currentChat.members[0].username;
@@ -105,7 +105,7 @@ const ChatHeader = ({ typingUser }: { typingUser: string | null }) => {
 		}
 
 		let result: ProfileReference;
-		if (currentChat.members[0].id === auth.id) {
+		if (currentChat.members[0]._id === auth._id) {
 			result = currentChat.members[1];
 		} else {
 			result = currentChat.members[0];
@@ -181,7 +181,7 @@ const ChatHeader = ({ typingUser }: { typingUser: string | null }) => {
 						</Typography>
 						<NavLink
 							to={`/profile/${getFriend()?.username}/${
-								getFriend()?.id
+								getFriend()?._id
 							}`}
 							style={{
 								fontSize: '18px',

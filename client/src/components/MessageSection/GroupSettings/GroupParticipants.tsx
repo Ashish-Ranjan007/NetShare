@@ -80,7 +80,7 @@ const GroupParticipants = () => {
 			return false;
 		}
 
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
+		return chat.admins.find((admin) => admin._id === userId) ? true : false;
 	};
 
 	const handleAddAdmin = async () => {
@@ -91,13 +91,13 @@ const GroupParticipants = () => {
 		setOpenBackdrop(true);
 
 		try {
-			if (isAdmin(selectedMember.id)) {
+			if (isAdmin(selectedMember._id)) {
 				return;
 			} else {
 				// Add Admin
 				const returned = await postAddAdmin({
 					chatId: chat._id,
-					userId: selectedMember.id,
+					userId: selectedMember._id,
 				}).unwrap();
 
 				if (returned.success) {
@@ -123,11 +123,11 @@ const GroupParticipants = () => {
 		setOpenBackdrop(true);
 
 		try {
-			if (isAdmin(selectedMember.id)) {
+			if (isAdmin(selectedMember._id)) {
 				// Remove Admin
 				const returned = await postRemoveAdmin({
 					chatId: chat._id,
-					adminId: selectedMember.id,
+					adminId: selectedMember._id,
 				}).unwrap();
 
 				if (returned.success) {
@@ -139,7 +139,7 @@ const GroupParticipants = () => {
 				// Remove Member
 				const returned = await postRemoveMember({
 					chatId: chat._id,
-					memberId: selectedMember.id,
+					memberId: selectedMember._id,
 				}).unwrap();
 
 				if (returned.success) {
@@ -180,7 +180,7 @@ const GroupParticipants = () => {
 			>
 				{chat?.members.map((member) => (
 					<ListItem
-						key={member.id}
+						key={member._id}
 						sx={{
 							cursor: 'pointer',
 							transition: '300ms ease',
@@ -196,11 +196,11 @@ const GroupParticipants = () => {
 									fontSize: '12px',
 								}}
 							>
-								{isAdmin(member.id) && 'Admin'}
+								{isAdmin(member._id) && 'Admin'}
 							</Typography>
 						}
 						onClick={() => {
-							if (!isAdmin(auth.id)) {
+							if (!isAdmin(auth._id)) {
 								return;
 							}
 
@@ -229,7 +229,7 @@ const GroupParticipants = () => {
 						}}
 					/>
 					<NavLink
-						to={`/profile/${selectedMember?.username}/${selectedMember?.id}`}
+						to={`/profile/${selectedMember?.username}/${selectedMember?._id}`}
 					>
 						<Typography
 							textAlign="center"
@@ -248,7 +248,7 @@ const GroupParticipants = () => {
 							marginTop: '16px',
 						}}
 					>
-						{isAdmin(selectedMember?.id || '') ? (
+						{isAdmin(selectedMember?._id || '') ? (
 							<>
 								<Button onClick={() => setOpenModal(false)}>
 									Cancel
@@ -282,12 +282,12 @@ const GroupParticipants = () => {
 			>
 				<Box sx={{ ...style, width: { xs: '400px', sm: '500px' } }}>
 					<Typography variant="h6" textAlign="center">
-						{isAdmin(selectedMember?.id || '')
+						{isAdmin(selectedMember?._id || '')
 							? 'Dismiss as Group Admin'
 							: 'Remove User form Group'}
 					</Typography>
 					<Typography sx={{ marginY: '16px' }}>
-						{isAdmin(selectedMember?.id || '')
+						{isAdmin(selectedMember?._id || '')
 							? 'Are you sure you want to dismiss this user as an admin ?'
 							: 'Are you sure you want to remove this user from the group ?'}
 					</Typography>

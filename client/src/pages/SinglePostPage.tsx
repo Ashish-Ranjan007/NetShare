@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Grid, Box } from '@mui/material';
+import { Grid, Box, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
 import Carousel from '../components/Carousel';
@@ -9,6 +9,7 @@ import WidgetSection from '../components/WidgetSection';
 import CommentSection from '../components/CommentSection';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useGetPostByIdQuery } from '../features/post/postApiSlice';
+import DeletePost from '../components/DeletePost';
 
 const SinglePostPage = () => {
 	const { postId } = useParams();
@@ -45,6 +46,8 @@ const SinglePostPage = () => {
 						<Box sx={{ paddingX: { xs: '8px', md: '24px' } }}>
 							<PostInfo />
 						</Box>
+
+						<DeletePost />
 
 						{post._id.length > 0 && <CommentSection post={post} />}
 					</Box>

@@ -36,7 +36,7 @@ const AddGroupMember = () => {
 			return false;
 		}
 
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
+		return chat.admins.find((admin) => admin._id === userId) ? true : false;
 	};
 
 	const getNonMemberFriends = (): ProfileReference[] => {
@@ -48,7 +48,7 @@ const AddGroupMember = () => {
 
 		auth.friends.forEach((friend) => {
 			const isFriendGroupMember = chat.members.find(
-				(member) => member.id === friend.id
+				(member) => member._id === friend._id
 			);
 
 			if (!isFriendGroupMember) {
@@ -69,7 +69,7 @@ const AddGroupMember = () => {
 				chatId: chat._id,
 				userId: selectedUser,
 			}).unwrap();
-			console.log(returned);
+
 			dispatch(addGroupMember(returned.data.groupChat));
 		} catch (error) {
 			console.log(error);
@@ -84,7 +84,7 @@ const AddGroupMember = () => {
 			<Button
 				endIcon={<PersonAdd />}
 				onClick={() => setOpenModal(true)}
-				disabled={isAdmin(auth.id) ? false : true}
+				disabled={isAdmin(auth._id) ? false : true}
 			>
 				Add Member
 			</Button>
@@ -119,19 +119,19 @@ const AddGroupMember = () => {
 								getNonMemberFriends().map((friend) => {
 									return (
 										<ListItem
-											key={friend.id}
+											key={friend._id}
 											secondaryAction={
 												<Checkbox
 													edge="end"
 													checked={
-														friend.id ===
+														friend._id ===
 														selectedUser
 															? true
 															: false
 													}
 													onChange={() =>
 														setSelectedUser(
-															friend.id
+															friend._id
 														)
 													}
 												/>

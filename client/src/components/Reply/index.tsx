@@ -184,7 +184,7 @@ const Reply = ({
 				</Box>
 				<Box>
 					<Typography>
-						{reply.repliedTo.replyId && (
+						{reply.repliedTo && (
 							<a
 								style={{
 									color: '#1976d2',
@@ -231,7 +231,7 @@ const Reply = ({
 					>
 						Reply
 					</Button>
-					{reply.createdBy.id === auth.id && (
+					{reply.createdBy._id === auth._id && (
 						<Button
 							color="inherit"
 							variant="text"
@@ -243,7 +243,7 @@ const Reply = ({
 							Edit
 						</Button>
 					)}
-					{reply.createdBy.id === auth.id && (
+					{reply.createdBy._id === auth._id && (
 						<Button
 							variant="text"
 							color="error"

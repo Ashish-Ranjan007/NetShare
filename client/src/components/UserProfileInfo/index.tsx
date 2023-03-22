@@ -132,7 +132,7 @@ const UserProfileInfo = ({ username }: { username: string | undefined }) => {
 							</Button>
 							{auth.friends.find(
 								(friend) =>
-									friend.id === data.data.user._id.toString()
+									friend._id === data.data.user._id.toString()
 							) && (
 								<Button
 									sx={{

@@ -41,7 +41,7 @@ const RenameGroup = () => {
 			return false;
 		}
 
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
+		return chat.admins.find((admin) => admin._id === userId) ? true : false;
 	};
 
 	const handleSubmit = async () => {
@@ -83,10 +83,10 @@ const RenameGroup = () => {
 				{chat?.name}
 			</Typography>
 			<DriveFileRenameOutline
-				color={isAdmin(auth.id) ? 'primary' : 'disabled'}
+				color={isAdmin(auth._id) ? 'primary' : 'disabled'}
 				sx={{ cursor: 'pointer' }}
 				onClick={() => {
-					if (!isAdmin(auth.id)) {
+					if (!isAdmin(auth._id)) {
 						return;
 					}
 					setOpenModal(true);

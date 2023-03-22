@@ -27,7 +27,7 @@ const FriendList = ({ friends }: Props) => {
 			>
 				<List>
 					{friends.map((friend) => {
-						return <Friend key={friend.id} {...friend} />;
+						return <Friend key={friend._id} {...friend} />;
 					})}
 				</List>
 			</Box>

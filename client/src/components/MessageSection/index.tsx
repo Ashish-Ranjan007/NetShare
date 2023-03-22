@@ -33,17 +33,17 @@ const MessageSection = () => {
 	useEffect(() => {
 		socket = io(SERVER_ENDPOINT);
 
-		socket.emit('setup', auth.id);
+		socket.emit('setup', auth._id);
 
 		if (currentChat) {
-			socket.emit('join_chat', auth.id, currentChat._id);
+			socket.emit('join_chat', auth._id, currentChat._id);
 			socket.on('connected', () => {
 				setSocketConnected(true);
 			});
 		}
 
 		return () => {
-			socket.emit('leave_room', auth.id);
+			socket.emit('leave_room', auth._id);
 			if (currentChat) {
 				socket.emit('leave_room', currentChat._id);
 			}
@@ -70,7 +70,7 @@ const MessageSection = () => {
 				dispatch(
 					incrementUnreadMessage({
 						chatId: message.chat._id,
-						authId: auth.id,
+						authId: auth._id,
 					})
 				);
 			}
@@ -89,7 +89,8 @@ const MessageSection = () => {
 			}
 
 			if (
-				getUnreadMessages([currentChat], currentChat._id, auth.id) === 0
+				getUnreadMessages([currentChat], currentChat._id, auth._id) ===
+				0
 			) {
 				return;
 			}
@@ -101,7 +102,7 @@ const MessageSection = () => {
 				dispatch(
 					resetUnreadMessage({
 						chatId: currentChat._id,
-						authId: auth.id,
+						authId: auth._id,
 					})
 				);
 			}
@@ -113,7 +114,9 @@ const MessageSection = () => {
 	// Typing Indicator socket event handler
 	useEffect(() => {
 		socket.on('typing', (chatId: string, username: string) => {
-			setTypingUser(username);
+			if (username !== auth.username) {
+				setTypingUser(username);
+			}
 		});
 
 		socket.on('stop_typing', (chatId: string, username: string) => {

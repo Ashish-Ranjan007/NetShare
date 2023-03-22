@@ -43,7 +43,7 @@ const Birthdays = () => {
 					<List>
 						{birthdays.map((friend) => (
 							<ListItem
-								key={friend.id}
+								key={friend._id}
 								sx={{
 									':hover': {
 										backgroundColor: '#eee',
@@ -52,7 +52,7 @@ const Birthdays = () => {
 								}}
 							>
 								<Link
-									to={`/profile/${friend.username}/${friend.id}`}
+									to={`/profile/${friend.username}/${friend._id}`}
 									style={{
 										color: 'inherit',
 										display: 'flex',

@@ -11,7 +11,7 @@ import { ExitToAppSharp } from '@mui/icons-material';
 
 import { deleteGroup } from '../../../features/chats/chatsSlice';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
-import { useRemoveMemberMutation } from '../../../features/chats/chatsApiSlice';
+import { useExitGroupChatMutation } from '../../../features/chats/chatsApiSlice';
 
 const style = {
 	position: 'absolute',
@@ -30,39 +30,31 @@ const ExistGroup = () => {
 	const [openBackdrop, setOpenBackdrop] = useState<boolean>(false);
 
 	const dispatch = useAppDispatch();
-	const [postRemoveMember] = useRemoveMemberMutation();
+	const [postExitGroupChat] = useExitGroupChatMutation();
 	const auth = useAppSelector((state) => state.auth);
 	const chat = useAppSelector((state) => state.chats.currentChat);
-
-	const isAdmin = (userId: string): boolean => {
-		if (!chat) {
-			return false;
-		}
-
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
-	};
 
 	const isMember = (userId: string): boolean => {
 		if (!chat) {
 			return false;
 		}
 
-		return chat.members.find((member) => member.id === userId)
+		return chat.members.find((member) => member._id === userId)
 			? true
 			: false;
 	};
 
 	const handleExitGroup = async () => {
-		if (!chat || !isMember(auth.id)) {
+		if (!chat || !isMember(auth._id)) {
 			return;
 		}
 
 		setOpenBackdrop(true);
 
 		try {
-			const returned = await postRemoveMember({
+			const returned = await postExitGroupChat({
 				chatId: chat._id,
-				memberId: auth.id,
+				memberId: auth._id,
 			}).unwrap();
 
 			if (returned.success) {
@@ -87,7 +79,6 @@ const ExistGroup = () => {
 				}}
 				variant="outlined"
 				onClick={() => setOpenModal(true)}
-				disabled={isAdmin(auth.id) ? false : true}
 			>
 				Exit Group
 			</Button>
@@ -97,7 +88,7 @@ const ExistGroup = () => {
 						Exit Group
 					</Typography>
 					<Typography sx={{ marginY: '16px' }}>
-						Are you sure that you want to leave this group ?
+						Are you sure that you want to leave this group?
 					</Typography>
 					<Box
 						sx={{

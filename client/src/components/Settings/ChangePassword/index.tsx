@@ -40,7 +40,7 @@ const ChangePassword = () => {
 					import.meta.env.VITE_API_BASE_URL
 				}/api/settings/change-password`,
 				{
-					userId: auth.id,
+					userId: auth._id,
 					oldPassword: values.oldPassword,
 					newPassword: values.newPassword,
 					confirmNewPassword: values.confirmNewPassword,

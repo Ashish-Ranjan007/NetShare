@@ -43,7 +43,7 @@ const SetDisplayPicture = () => {
 			return false;
 		}
 
-		return chat.admins.find((admin) => admin.id === userId) ? true : false;
+		return chat.admins.find((admin) => admin._id === userId) ? true : false;
 	};
 
 	const onImageSelection = (e: ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +107,7 @@ const SetDisplayPicture = () => {
 					marginX: 'auto',
 				}}
 				onClick={() => {
-					if (!isAdmin(auth.id)) {
+					if (!isAdmin(auth._id)) {
 						return;
 					}
 					setOpenModal(true);

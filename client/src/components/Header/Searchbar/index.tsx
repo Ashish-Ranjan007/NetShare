@@ -1,4 +1,5 @@
 import {
+	Avatar,
 	Box,
 	InputAdornment,
 	List,
@@ -20,7 +21,7 @@ type Props = {
 };
 
 type Profile = {
-	id: string;
+	_id: string;
 	profilePic: string;
 	username: string;
 };
@@ -122,7 +123,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 		// Check if user already exists in recentSearches state
 		let found = false;
 		for (let i = 0; i < auth.recentSearches.length; i++) {
-			if (auth.recentSearches[i].id === id) {
+			if (auth.recentSearches[i]._id === id) {
 				found = true;
 				break;
 			}
@@ -132,7 +133,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 		if (!found) {
 			dispatch(
 				setRecentSearches({
-					id: id,
+					_id: id,
 					username: username,
 					profilePic: profilePic,
 				})
@@ -229,26 +230,21 @@ const Searchbar = ({ mobile = false }: Props) => {
 					}}
 				>
 					{queryProfiles.map((result) => (
-						<ListItem sx={{ padding: '0px' }} key={result.id}>
+						<ListItem sx={{ padding: '0px' }} key={result._id}>
 							<ListItemButton
 								sx={{ padding: '8px 8px' }}
 								onMouseDown={() =>
 									handleMouseDown(
-										result.id,
+										result._id,
 										result.username,
 										result.profilePic
 									)
 								}
 							>
 								<ListItemIcon>
-									<Box
-										component="img"
-										sx={{
-											width: 32,
-											borderRadius: '100px',
-										}}
-										src="https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=580&q=80"
-										alt={`${result.username}'s profile picture`}
+									<Avatar
+										sx={{ width: '32px', height: '32px' }}
+										src={result.profilePic}
 									/>
 								</ListItemIcon>
 								<ListItemText primary={result.username} />
