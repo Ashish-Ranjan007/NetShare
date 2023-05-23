@@ -64,7 +64,7 @@ const Searchbar = ({ mobile = false }: Props) => {
 						(result: any) => {
 							return {
 								profilePic: result.profilePic,
-								id: result._id,
+								_id: result._id,
 								username: result.username,
 							};
 						}
