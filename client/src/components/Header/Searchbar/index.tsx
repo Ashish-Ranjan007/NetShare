@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { setRecentSearches } from '../../../features/auth/authSlice';
 
@@ -231,24 +231,37 @@ const Searchbar = ({ mobile = false }: Props) => {
 				>
 					{queryProfiles.map((result) => (
 						<ListItem sx={{ padding: '0px' }} key={result._id}>
-							<ListItemButton
-								sx={{ padding: '8px 8px' }}
-								onMouseDown={() =>
-									handleMouseDown(
-										result._id,
-										result.username,
-										result.profilePic
-									)
-								}
+							<Link
+								to={`/profile/${result.username}/${result._id}`}
+								style={{
+									width: '100%',
+									display: 'block',
+									textDecoration: 'none',
+									color: 'inherit',
+								}}
 							>
-								<ListItemIcon>
-									<Avatar
-										sx={{ width: '32px', height: '32px' }}
-										src={result.profilePic}
-									/>
-								</ListItemIcon>
-								<ListItemText primary={result.username} />
-							</ListItemButton>
+								<ListItemButton
+									sx={{ padding: '8px 8px' }}
+									onMouseDown={() =>
+										handleMouseDown(
+											result._id,
+											result.username,
+											result.profilePic
+										)
+									}
+								>
+									<ListItemIcon>
+										<Avatar
+											sx={{
+												width: '32px',
+												height: '32px',
+											}}
+											src={result.profilePic}
+										/>
+									</ListItemIcon>
+									<ListItemText primary={result.username} />
+								</ListItemButton>
+							</Link>
 						</ListItem>
 					))}
 				</List>
