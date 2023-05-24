@@ -112,9 +112,9 @@ const Login = () => {
 										color: '#757575',
 									}}
 								>
-									Newslist is a site covering news, culture,
-									politics and everything that matters the
-									most.
+									NetShare is a social media platform for
+									connecting, sharing, and discovering with
+									friends.
 								</Typography>
 								<LoginForm />
 								<Typography

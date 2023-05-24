@@ -136,8 +136,8 @@ const Signup = () => {
 										color: '#757575',
 									}}
 								>
-									Set up an account to get started. You can
-									then start personalizing your profile.
+									Join the Netshare Community: Connect, Share,
+									and Discover Together!
 								</Typography>
 								<SignupForm />
 								<Typography
