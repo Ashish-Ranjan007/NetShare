@@ -72,10 +72,10 @@ By developing NetShare, I gained valuable experience in utilizing the MERN stack
 
     ```bash
     cd client
-    npm start
+    npm run dev
 
     cd ../server
-    npm run dev
+    npm run start-dev
 
     ```
 
