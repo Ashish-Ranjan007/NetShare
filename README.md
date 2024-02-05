@@ -40,10 +40,6 @@ NetShare is a comprehensive social media application built using the MERN stack 
 -   MongoDB
 -   Cloudinary (for storing images)
 
-## Project Overview
-
-By developing NetShare, I gained valuable experience in utilizing the MERN stack and integrating socket.io for real-time communication. This project showcases my skills in full-stack development, database management, and creating engaging user experiences.
-
 ## Getting Started
 
 1. Clone the repository:
